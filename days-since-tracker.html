@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Days Since</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f7f6f3;
+    --surface: #ffffff;
+    --border: #e4e2db;
+    --text-primary: #1a1a18;
+    --text-secondary: #6b6a65;
+    --text-hint: #a09e99;
+    --green-bg: #eaf3de; --green-text: #27500a;
+    --amber-bg: #faeeda; --amber-text: #633806;
+    --red-bg: #fcebeb; --red-text: #791f1f;
+    --blue-bg: #e6f1fb; --blue-text: #185fa5;
+    --accent: #3b6d11;
+    --radius-md: 8px;
+    --radius-lg: 14px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #181816; --surface: #232320; --border: #2e2e2b;
+      --text-primary: #f0efe9; --text-secondary: #9a9890; --text-hint: #5a5955;
+      --green-bg: #173404; --green-text: #c0dd97;
+      --amber-bg: #412402; --amber-text: #fac775;
+      --red-bg: #501313; --red-text: #f7c1c1;
+      --blue-bg: #042c53; --blue-text: #85b7eb;
+      --accent: #97c459;
+    }
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+
+  .container { max-width: 720px; margin: 0 auto; }
+
+  header { margin-bottom: 2rem; }
+  header h1 { font-size: 26px; font-weight: 500; letter-spacing: -0.3px; }
+  header p { font-size: 14px; color: var(--text-secondary); margin-top: 4px; }
+
+  .notif-bar {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--blue-bg); color: var(--blue-text);
+    border-radius: var(--radius-md); padding: 10px 14px;
+    font-size: 13px; margin-bottom: 1.5rem; cursor: pointer;
+    border: 1px solid transparent;
+  }
+  .notif-bar:hover { opacity: 0.85; }
+  .notif-bar.hidden { display: none; }
+
+  .add-row { display: flex; gap: 8px; margin-bottom: 2rem; }
+  .add-row input {
+    flex: 1; padding: 10px 14px; font-size: 15px;
+    border: 1px solid var(--border); border-radius: var(--radius-md);
+    background: var(--surface); color: var(--text-primary); outline: none;
+    transition: border-color 0.15s;
+  }
+  .add-row input:focus { border-color: var(--accent); }
+  .add-row input::placeholder { color: var(--text-hint); }
+  .add-row button {
+    padding: 10px 18px; font-size: 14px; font-weight: 500;
+    background: var(--accent); color: #fff; border: none;
+    border-radius: var(--radius-md); cursor: pointer; transition: opacity 0.15s;
+    white-space: nowrap;
+  }
+  .add-row button:hover { opacity: 0.85; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 1.1rem 1.25rem;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .card.milestone { border-color: var(--amber-text); }
+
+  .card-name {
+    font-size: 14px; font-weight: 500; color: var(--text-primary);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .card-days { font-size: 38px; font-weight: 500; line-height: 1.1; margin: 4px 0 2px; }
+  .card-sublabel { font-size: 12px; color: var(--text-secondary); }
+  .card-date { font-size: 11px; color: var(--text-hint); margin-top: 2px; }
+
+  .badge {
+    display: inline-block; font-size: 11px; font-weight: 500;
+    padding: 3px 9px; border-radius: 20px; margin-top: 4px; width: fit-content;
+  }
+  .badge-ok    { background: var(--green-bg); color: var(--green-text); }
+  .badge-warn  { background: var(--amber-bg); color: var(--amber-text); }
+  .badge-alert { background: var(--red-bg);   color: var(--red-text);  }
+  .badge-mile  { background: var(--amber-bg); color: var(--amber-text); }
+
+  .card-actions { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+
+  .btn-done {
+    flex: 1; padding: 7px 0; font-size: 13px; font-weight: 500;
+    background: var(--green-bg); color: var(--green-text);
+    border: 1px solid transparent; border-radius: var(--radius-md);
+    cursor: pointer; transition: opacity 0.15s; min-width: 70px;
+  }
+  .btn-done:hover { opacity: 0.8; }
+
+  .btn-edit {
+    padding: 7px 10px; font-size: 13px;
+    background: transparent; color: var(--text-secondary);
+    border: 1px solid var(--border); border-radius: var(--radius-md);
+    cursor: pointer; transition: color 0.15s, border-color 0.15s;
+  }
+  .btn-edit:hover { color: var(--blue-text); border-color: var(--blue-text); }
+
+  .btn-delete {
+    padding: 7px 10px; font-size: 13px;
+    background: transparent; color: var(--text-hint);
+    border: 1px solid var(--border); border-radius: var(--radius-md);
+    cursor: pointer; transition: color 0.15s, border-color 0.15s;
+  }
+  .btn-delete:hover { color: var(--red-text); border-color: var(--red-text); }
+
+  /* Edit inline row */
+  .edit-row {
+    display: none; gap: 6px; align-items: center; margin-top: 4px; flex-wrap: wrap;
+  }
+  .edit-row.open { display: flex; }
+  .edit-row input[type="date"] {
+    flex: 1; padding: 6px 10px; font-size: 13px; min-width: 120px;
+    border: 1px solid var(--border); border-radius: var(--radius-md);
+    background: var(--surface); color: var(--text-primary); outline: none;
+  }
+  .edit-row input[type="date"]:focus { border-color: var(--accent); }
+  .btn-save {
+    padding: 6px 12px; font-size: 13px; font-weight: 500;
+    background: var(--accent); color: #fff; border: none;
+    border-radius: var(--radius-md); cursor: pointer;
+  }
+  .btn-cancel {
+    padding: 6px 10px; font-size: 13px;
+    background: transparent; color: var(--text-hint);
+    border: 1px solid var(--border); border-radius: var(--radius-md); cursor: pointer;
+  }
+
+  .empty {
+    grid-column: 1 / -1; text-align: center;
+    padding: 4rem 1rem; color: var(--text-hint); font-size: 14px; line-height: 1.8;
+  }
+  .empty svg { display: block; margin: 0 auto 12px; opacity: 0.35; }
+
+  footer { margin-top: 3rem; text-align: center; font-size: 12px; color: var(--text-hint); }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Days since</h1>
+    <p>Track how long it's been since you last did something.</p>
+  </header>
+
+  <div class="notif-bar hidden" id="notifBar" onclick="requestNotifPermission()">
+    🔔 Enable notifications to get milestone alerts (1 month, 69, 100, 200… days)
+  </div>
+
+  <div class="add-row">
+    <input type="text" id="newItem" placeholder="Add something to track… e.g. Exercise" />
+    <button onclick="addItem()">+ Add</button>
+  </div>
+
+  <div class="cards" id="cards"></div>
+
+  <footer>Data saved locally in your browser · Notifications fire when you open this page</footer>
+</div>
+
+<script>
+const KEY = 'days_since_v1';
+const NOTIFIED_KEY = 'days_since_notified';
+
+function load() {
+  try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch { return []; }
+}
+function save(items) { localStorage.setItem(KEY, JSON.stringify(items)); }
+
+function loadNotified() {
+  try { return JSON.parse(localStorage.getItem(NOTIFIED_KEY)) || {}; } catch { return {}; }
+}
+function saveNotified(n) { localStorage.setItem(NOTIFIED_KEY, JSON.stringify(n)); }
+
+function daysSince(dateStr) {
+  if (!dateStr) return null;
+  return Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000);
+}
+
+function milestoneHit(days) {
+  if (days === null) return null;
+  if (days === 30) return '1 month';
+  if (days === 69) return '69 days';
+  if (days >= 100 && days % 100 === 0) return days + ' days';
+  return null;
+}
+
+function render() {
+  const items = load();
+  const el = document.getElementById('cards');
+  if (!items.length) {
+    el.innerHTML = `<div class="empty">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+      </svg>
+      Nothing tracked yet.<br>Add something above to get started.
+    </div>`;
+    return;
+  }
+
+  el.innerHTML = items.map((item, i) => {
+    const days = daysSince(item.lastDate);
+    const lastStr = item.lastDate
+      ? 'Last: ' + new Date(item.lastDate).toLocaleDateString(undefined, { day:'numeric', month:'short', year:'numeric' })
+      : 'Never logged';
+
+    let badgeClass, badgeText, daysColor;
+    const ms = milestoneHit(days);
+
+    if (days === null) {
+      badgeClass = 'badge-warn'; badgeText = 'not logged yet'; daysColor = 'var(--amber-text)';
+    } else if (days === 0) {
+      badgeClass = 'badge-ok'; badgeText = 'today'; daysColor = 'var(--green-text)';
+    } else if (days <= 7) {
+      badgeClass = 'badge-ok'; badgeText = days + 'd ago'; daysColor = 'var(--green-text)';
+    } else if (days <= 30) {
+      badgeClass = 'badge-warn'; badgeText = days + 'd ago'; daysColor = 'var(--amber-text)';
+    } else {
+      badgeClass = 'badge-alert'; badgeText = days + 'd ago'; daysColor = 'var(--red-text)';
+    }
+
+    const milestoneBadge = ms ? `<span class="badge badge-mile">🏁 ${ms} milestone!</span>` : '';
+    const cardClass = ms ? 'card milestone' : 'card';
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    const currentVal = item.lastDate ? item.lastDate.split('T')[0] : todayStr;
+
+    return `<div class="${cardClass}" id="card-${i}">
+      <div class="card-name" title="${item.name}">${item.name}</div>
+      <div class="card-days" style="color:${daysColor}">${days === null ? '—' : days}</div>
+      <div class="card-sublabel">days since</div>
+      <div class="card-date">${lastStr}</div>
+      <span class="badge ${badgeClass}">${badgeText}</span>
+      ${milestoneBadge}
+      <div class="card-actions">
+        <button class="btn-done" onclick="markDone(${i})">✓ Did it</button>
+        <button class="btn-edit" onclick="toggleEdit(${i})" title="Edit date">✎ Edit</button>
+        <button class="btn-delete" onclick="removeItem(${i})" title="Remove">✕</button>
+      </div>
+      <div class="edit-row" id="edit-${i}">
+        <input type="date" id="datepick-${i}" value="${currentVal}" max="${todayStr}" />
+        <button class="btn-save" onclick="saveDate(${i})">Save</button>
+        <button class="btn-cancel" onclick="toggleEdit(${i})">Cancel</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function addItem() {
+  const input = document.getElementById('newItem');
+  const name = input.value.trim();
+  if (!name) return;
+  const items = load();
+  items.push({ name, lastDate: null });
+  save(items);
+  input.value = '';
+  render();
+}
+
+function markDone(i) {
+  const items = load();
+  items[i].lastDate = new Date().toISOString();
+  save(items);
+  render();
+}
+
+function removeItem(i) {
+  const items = load();
+  items.splice(i, 1);
+  save(items);
+  render();
+}
+
+function toggleEdit(i) {
+  const row = document.getElementById('edit-' + i);
+  row.classList.toggle('open');
+}
+
+function saveDate(i) {
+  const val = document.getElementById('datepick-' + i).value;
+  if (!val) return;
+  const items = load();
+  items[i].lastDate = new Date(val).toISOString();
+  save(items);
+  render();
+}
+
+// Notifications
+function checkNotifBar() {
+  if (Notification.permission === 'default') {
+    document.getElementById('notifBar').classList.remove('hidden');
+  }
+}
+
+function requestNotifPermission() {
+  Notification.requestPermission().then(p => {
+    if (p === 'granted') {
+      document.getElementById('notifBar').classList.add('hidden');
+      checkMilestones();
+    }
+  });
+}
+
+function checkMilestones() {
+  if (Notification.permission !== 'granted') return;
+  const items = load();
+  const notified = loadNotified();
+  let changed = false;
+
+  items.forEach(item => {
+    const days = daysSince(item.lastDate);
+    const ms = milestoneHit(days);
+    if (!ms) return;
+
+    const nkey = item.name + ':' + days;
+    if (!notified[nkey]) {
+      new Notification('Days Since — ' + item.name, {
+        body: `It's been ${ms} since you last did "${item.name}". Time to get back to it?`,
+        icon: ''
+      });
+      notified[nkey] = true;
+      changed = true;
+    }
+  });
+
+  if (changed) saveNotified(notified);
+}
+
+document.getElementById('newItem').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addItem();
+});
+
+// Init
+const existing = load();
+if (!existing.length) {
+  save([{ name: 'Exercise', lastDate: null }]);
+}
+
+render();
+checkNotifBar();
+checkMilestones();
+</script>
+</body>
+</html>
