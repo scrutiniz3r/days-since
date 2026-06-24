@@ -1,0 +1,18 @@
+{
+  "name": "Days Since",
+  "short_name": "Days Since",
+  "description": "Track how long it's been since you last did something.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F8F7F4",
+  "theme_color": "#F8F7F4",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231A1917'/><text y='68' x='50' text-anchor='middle' font-size='58'>🗓️</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
