@@ -1,366 +1,613 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Days Since</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --bg: #f7f6f3;
-    --surface: #ffffff;
-    --border: #e4e2db;
-    --text-primary: #1a1a18;
-    --text-secondary: #6b6a65;
-    --text-hint: #a09e99;
-    --green-bg: #eaf3de; --green-text: #27500a;
-    --amber-bg: #faeeda; --amber-text: #633806;
-    --red-bg: #fcebeb; --red-text: #791f1f;
-    --blue-bg: #e6f1fb; --blue-text: #185fa5;
-    --accent: #3b6d11;
-    --radius-md: 8px;
-    --radius-lg: 14px;
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F0EEE9;--surface:#FAFAF8;--surface2:#F2F0EB;--border:#DDD9D0;--border2:#E8E5DE;
+  --tp:#1C1B17;--ts:#6B6860;--th:#ADAA9F;
+  --accent:#2D6A2D;--accent-light:#EBF4EB;
+  --amber:#7A4F10;--amber-bg:#FAF0E0;
+  --red:#7A1F1F;--red-bg:#FAEBEB;
+  --blue:#1A4FA0;--blue-bg:#EBF0FA;
+  --pill-r:20px;--card-r:16px;--r:10px;
+  --mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#18181A;--surface:#222225;--surface2:#2A2A2E;--border:#333338;--border2:#2E2E33;
+    --tp:#F0EFF0;--ts:#9A9899;--th:#58575C;
+    --accent:#72C472;--accent-light:#1A3A1A;
+    --amber:#F0B060;--amber-bg:#3A2A0A;
+    --red:#F08080;--red-bg:#3A1010;
+    --blue:#80A8F0;--blue-bg:#10204A;
   }
+}
+body{font-family:var(--sans);background:var(--bg);color:var(--tp);min-height:100vh}
+.screen{display:none;min-height:100vh}
+.screen.active{display:flex;flex-direction:column}
 
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #181816; --surface: #232320; --border: #2e2e2b;
-      --text-primary: #f0efe9; --text-secondary: #9a9890; --text-hint: #5a5955;
-      --green-bg: #173404; --green-text: #c0dd97;
-      --amber-bg: #412402; --amber-text: #fac775;
-      --red-bg: #501313; --red-text: #f7c1c1;
-      --blue-bg: #042c53; --blue-text: #85b7eb;
-      --accent: #97c459;
-    }
-  }
+/* ── PIN / SETUP SHARED ── */
+.centered{align-items:center;justify-content:center;padding:2rem}
+.auth-box{width:100%;max-width:380px}
+.auth-logo{font-size:36px;margin-bottom:1rem;text-align:center}
+.auth-box h1{font-size:22px;font-weight:600;margin-bottom:6px}
+.auth-box p{font-size:14px;color:var(--ts);margin-bottom:2rem}
 
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    background: var(--bg);
-    color: var(--text-primary);
-    min-height: 100vh;
-    padding: 2rem 1rem;
-  }
+/* PIN */
+.pin-dots{display:flex;gap:12px;justify-content:center;margin-bottom:1.5rem}
+.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border);background:transparent;transition:background .15s,border-color .15s}
+.pin-dot.filled{background:var(--accent);border-color:var(--accent)}
+.pin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:240px;margin:0 auto 1rem}
+.pin-key{padding:16px;font-size:20px;font-weight:500;font-family:var(--mono);border:1px solid var(--border);border-radius:var(--r);background:var(--surface);color:var(--tp);cursor:pointer;transition:background .1s}
+.pin-key:hover{background:var(--surface2)}
+.pin-key:active{background:var(--border)}
+.pin-error{font-size:13px;color:var(--red);min-height:20px;margin-top:4px;text-align:center}
+.pin-link{font-size:13px;color:var(--ts);cursor:pointer;text-decoration:underline;margin-top:10px;display:block;text-align:center}
 
-  .container { max-width: 720px; margin: 0 auto; }
+/* SETUP */
+.setup-step{margin-bottom:1.25rem}
+.setup-step label{display:block;font-size:13px;font-weight:500;margin-bottom:6px;color:var(--ts)}
+.setup-step input{width:100%;padding:10px 14px;font-size:14px;border:1px solid var(--border);border-radius:var(--r);background:var(--surface);color:var(--tp);outline:none;font-family:var(--sans)}
+.setup-step input:focus{border-color:var(--accent)}
+.setup-step small{display:block;font-size:12px;color:var(--th);margin-top:5px;line-height:1.5}
+.btn-primary{width:100%;padding:12px;font-size:15px;font-weight:600;background:var(--accent);color:#fff;border:none;border-radius:var(--r);cursor:pointer;transition:opacity .15s;margin-top:4px}
+.btn-primary:hover{opacity:.85}
 
-  header { margin-bottom: 2rem; }
-  header h1 { font-size: 26px; font-weight: 500; letter-spacing: -0.3px; }
-  header p { font-size: 14px; color: var(--text-secondary); margin-top: 4px; }
+/* ── TOPBAR ── */
+.topbar{display:flex;align-items:center;gap:10px;padding:1.1rem 1.5rem;border-bottom:1px solid var(--border2);background:var(--surface)}
+.topbar-title{font-size:18px;font-weight:600;flex:1}
+.topbar-btn{padding:7px 14px;font-size:13px;font-weight:500;border:1px solid var(--border);border-radius:var(--pill-r);background:transparent;color:var(--ts);cursor:pointer;transition:all .15s;white-space:nowrap}
+.topbar-btn:hover{border-color:var(--accent);color:var(--accent)}
+.topbar-btn.dim{color:var(--th)}
 
-  .notif-bar {
-    display: flex; align-items: center; gap: 10px;
-    background: var(--blue-bg); color: var(--blue-text);
-    border-radius: var(--radius-md); padding: 10px 14px;
-    font-size: 13px; margin-bottom: 1.5rem; cursor: pointer;
-    border: 1px solid transparent;
-  }
-  .notif-bar:hover { opacity: 0.85; }
-  .notif-bar.hidden { display: none; }
+/* ── MAIN ── */
+.main-content{padding:1.5rem;max-width:900px;margin:0 auto;width:100%}
 
-  .add-row { display: flex; gap: 8px; margin-bottom: 2rem; }
-  .add-row input {
-    flex: 1; padding: 10px 14px; font-size: 15px;
-    border: 1px solid var(--border); border-radius: var(--radius-md);
-    background: var(--surface); color: var(--text-primary); outline: none;
-    transition: border-color 0.15s;
-  }
-  .add-row input:focus { border-color: var(--accent); }
-  .add-row input::placeholder { color: var(--text-hint); }
-  .add-row button {
-    padding: 10px 18px; font-size: 14px; font-weight: 500;
-    background: var(--accent); color: #fff; border: none;
-    border-radius: var(--radius-md); cursor: pointer; transition: opacity 0.15s;
-    white-space: nowrap;
-  }
-  .add-row button:hover { opacity: 0.85; }
+.notif-bar{display:flex;align-items:center;gap:10px;background:var(--blue-bg);color:var(--blue);border-radius:var(--r);padding:10px 14px;font-size:13px;margin-bottom:1.25rem;cursor:pointer}
+.notif-bar:hover{opacity:.85}
+.notif-bar.hidden{display:none}
 
-  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+.add-row{display:flex;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap}
+.add-row input,.add-row select{padding:10px 14px;font-size:14px;border:1px solid var(--border);border-radius:var(--r);background:var(--surface);color:var(--tp);outline:none;font-family:var(--sans)}
+.add-row input{flex:1;min-width:140px}
+.add-row input:focus,.add-row select:focus{border-color:var(--accent)}
+.add-row select{min-width:120px}
+.add-row button{padding:10px 18px;font-size:14px;font-weight:600;background:var(--accent);color:#fff;border:none;border-radius:var(--r);cursor:pointer}
+.add-row button:hover{opacity:.85}
 
-  .card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius-lg); padding: 1.1rem 1.25rem;
-    display: flex; flex-direction: column; gap: 6px;
-  }
-  .card.milestone { border-color: var(--amber-text); }
+.labels-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.25rem;align-items:center}
+.label-chip{padding:5px 14px;font-size:12px;font-weight:500;border:1px solid var(--border);border-radius:var(--pill-r);background:transparent;color:var(--ts);cursor:pointer;transition:all .15s}
+.label-chip:hover{border-color:var(--accent);color:var(--accent)}
+.label-chip.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.label-chip.manage{color:var(--th);border-style:dashed}
 
-  .card-name {
-    font-size: 14px; font-weight: 500; color: var(--text-primary);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-  .card-days { font-size: 38px; font-weight: 500; line-height: 1.1; margin: 4px 0 2px; }
-  .card-sublabel { font-size: 12px; color: var(--text-secondary); }
-  .card-date { font-size: 11px; color: var(--text-hint); margin-top: 2px; }
+/* ── CARDS ── */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:12px}
+.card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--card-r);padding:1.1rem 1.25rem;display:flex;flex-direction:column;gap:5px;position:relative}
+.card.milestone{border-color:var(--amber)}
+.card-label-tag{position:absolute;top:12px;right:12px;font-size:10px;font-weight:500;padding:2px 8px;border-radius:var(--pill-r);background:var(--surface2);color:var(--ts);border:1px solid var(--border)}
+.card-name{font-size:14px;font-weight:600;padding-right:64px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-days{font-size:42px;font-weight:500;font-family:var(--mono);line-height:1;margin:6px 0 2px}
+.card-sublabel{font-size:11px;color:var(--ts);text-transform:uppercase;letter-spacing:.5px}
+.card-date{font-size:11px;color:var(--th);margin-top:3px}
+.card-avg{font-size:11px;color:var(--ts);margin-top:1px}
+.card-avg span{font-family:var(--mono);font-weight:500;color:var(--tp)}
 
-  .badge {
-    display: inline-block; font-size: 11px; font-weight: 500;
-    padding: 3px 9px; border-radius: 20px; margin-top: 4px; width: fit-content;
-  }
-  .badge-ok    { background: var(--green-bg); color: var(--green-text); }
-  .badge-warn  { background: var(--amber-bg); color: var(--amber-text); }
-  .badge-alert { background: var(--red-bg);   color: var(--red-text);  }
-  .badge-mile  { background: var(--amber-bg); color: var(--amber-text); }
+.badge{display:inline-block;font-size:11px;font-weight:500;padding:3px 10px;border-radius:var(--pill-r);margin-top:4px;width:fit-content}
+.badge-ok{background:var(--accent-light);color:var(--accent)}
+.badge-warn{background:var(--amber-bg);color:var(--amber)}
+.badge-alert{background:var(--red-bg);color:var(--red)}
 
-  .card-actions { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.card-actions{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
+.btn-done{flex:1;padding:7px 0;font-size:12px;font-weight:600;background:var(--accent-light);color:var(--accent);border:1px solid transparent;border-radius:var(--r);cursor:pointer;min-width:60px}
+.btn-done:hover{opacity:.8}
+.btn-sm{padding:7px 9px;font-size:12px;background:transparent;color:var(--th);border:1px solid var(--border);border-radius:var(--r);cursor:pointer}
+.btn-sm:hover{color:var(--tp);border-color:var(--ts)}
+.btn-sm.del:hover{color:var(--red);border-color:var(--red)}
 
-  .btn-done {
-    flex: 1; padding: 7px 0; font-size: 13px; font-weight: 500;
-    background: var(--green-bg); color: var(--green-text);
-    border: 1px solid transparent; border-radius: var(--radius-md);
-    cursor: pointer; transition: opacity 0.15s; min-width: 70px;
-  }
-  .btn-done:hover { opacity: 0.8; }
+.edit-row{display:none;gap:6px;margin-top:6px;flex-wrap:wrap}
+.edit-row.open{display:flex}
+.edit-row input[type=date]{flex:1;padding:6px 10px;font-size:13px;min-width:130px;border:1px solid var(--border);border-radius:var(--r);background:var(--surface);color:var(--tp);outline:none;font-family:var(--sans)}
+.edit-row input[type=date]:focus{border-color:var(--accent)}
+.btn-save{padding:6px 12px;font-size:12px;font-weight:600;background:var(--accent);color:#fff;border:none;border-radius:var(--r);cursor:pointer}
+.btn-cancel-sm{padding:6px 10px;font-size:12px;background:transparent;color:var(--th);border:1px solid var(--border);border-radius:var(--r);cursor:pointer}
 
-  .btn-edit {
-    padding: 7px 10px; font-size: 13px;
-    background: transparent; color: var(--text-secondary);
-    border: 1px solid var(--border); border-radius: var(--radius-md);
-    cursor: pointer; transition: color 0.15s, border-color 0.15s;
-  }
-  .btn-edit:hover { color: var(--blue-text); border-color: var(--blue-text); }
+.history-row{display:none;margin-top:8px;padding-top:8px;border-top:1px solid var(--border2)}
+.history-row.open{display:block}
+.history-row h4{font-size:11px;font-weight:600;color:var(--ts);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.history-list{max-height:110px;overflow-y:auto;display:flex;flex-direction:column;gap:4px}
+.history-item{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--ts)}
+.history-item button{font-size:10px;color:var(--th);background:none;border:none;cursor:pointer;padding:1px 4px}
+.history-item button:hover{color:var(--red)}
 
-  .btn-delete {
-    padding: 7px 10px; font-size: 13px;
-    background: transparent; color: var(--text-hint);
-    border: 1px solid var(--border); border-radius: var(--radius-md);
-    cursor: pointer; transition: color 0.15s, border-color 0.15s;
-  }
-  .btn-delete:hover { color: var(--red-text); border-color: var(--red-text); }
+.empty{grid-column:1/-1;text-align:center;padding:4rem 1rem;color:var(--th);font-size:14px;line-height:1.8}
+.empty svg{display:block;margin:0 auto 12px;opacity:.3}
 
-  /* Edit inline row */
-  .edit-row {
-    display: none; gap: 6px; align-items: center; margin-top: 4px; flex-wrap: wrap;
-  }
-  .edit-row.open { display: flex; }
-  .edit-row input[type="date"] {
-    flex: 1; padding: 6px 10px; font-size: 13px; min-width: 120px;
-    border: 1px solid var(--border); border-radius: var(--radius-md);
-    background: var(--surface); color: var(--text-primary); outline: none;
-  }
-  .edit-row input[type="date"]:focus { border-color: var(--accent); }
-  .btn-save {
-    padding: 6px 12px; font-size: 13px; font-weight: 500;
-    background: var(--accent); color: #fff; border: none;
-    border-radius: var(--radius-md); cursor: pointer;
-  }
-  .btn-cancel {
-    padding: 6px 10px; font-size: 13px;
-    background: transparent; color: var(--text-hint);
-    border: 1px solid var(--border); border-radius: var(--radius-md); cursor: pointer;
-  }
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:center;justify-content:center;padding:1rem}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:var(--card-r);padding:1.5rem;width:100%;max-width:360px;border:1px solid var(--border)}
+.modal h2{font-size:17px;font-weight:600;margin-bottom:1rem}
+.label-list{display:flex;flex-direction:column;gap:8px;margin-bottom:1rem;max-height:240px;overflow-y:auto}
+.label-list-item{display:flex;align-items:center;gap:8px}
+.label-list-item input{flex:1;padding:7px 12px;font-size:14px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg);color:var(--tp);font-family:var(--sans);outline:none}
+.label-list-item input:focus{border-color:var(--accent)}
+.label-list-item button{padding:6px 9px;font-size:12px;border:1px solid var(--border);border-radius:var(--r);background:transparent;color:var(--th);cursor:pointer}
+.label-list-item button:hover{color:var(--red);border-color:var(--red)}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:1rem}
+.modal-actions button{padding:8px 16px;font-size:13px;font-weight:500;border-radius:var(--r);cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--ts)}
+.modal-actions button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
 
-  .empty {
-    grid-column: 1 / -1; text-align: center;
-    padding: 4rem 1rem; color: var(--text-hint); font-size: 14px; line-height: 1.8;
-  }
-  .empty svg { display: block; margin: 0 auto 12px; opacity: 0.35; }
-
-  footer { margin-top: 3rem; text-align: center; font-size: 12px; color: var(--text-hint); }
+/* Sync bar */
+.sync-bar{display:flex;align-items:center;gap:8px;padding:.6rem 1.5rem;font-size:12px;color:var(--th);border-top:1px solid var(--border2);background:var(--surface);margin-top:auto}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--th);flex-shrink:0}
+.sync-dot.ok{background:var(--accent)}
+.sync-dot.err{background:var(--red)}
+.sync-dot.busy{background:var(--amber);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+footer{padding:.6rem 1.5rem;text-align:center;font-size:11px;color:var(--th)}
 </style>
 </head>
 <body>
-<div class="container">
-  <header>
-    <h1>Days since</h1>
-    <p>Track how long it's been since you last did something.</p>
-  </header>
 
-  <div class="notif-bar hidden" id="notifBar" onclick="requestNotifPermission()">
-    🔔 Enable notifications to get milestone alerts (1 month, 69, 100, 200… days)
+<!-- ── PIN SCREEN ── -->
+<div id="pinScreen" class="screen centered">
+  <div class="auth-box">
+    <div class="auth-logo">🗓️</div>
+    <h1 style="text-align:center" id="pinTitle">Enter your PIN</h1>
+    <p style="text-align:center" id="pinSub">Your tracker is PIN-protected.</p>
+    <div class="pin-dots">
+      <div class="pin-dot" id="d0"></div><div class="pin-dot" id="d1"></div>
+      <div class="pin-dot" id="d2"></div><div class="pin-dot" id="d3"></div>
+    </div>
+    <div class="pin-grid">
+      <button class="pin-key" onclick="pinKey('1')">1</button>
+      <button class="pin-key" onclick="pinKey('2')">2</button>
+      <button class="pin-key" onclick="pinKey('3')">3</button>
+      <button class="pin-key" onclick="pinKey('4')">4</button>
+      <button class="pin-key" onclick="pinKey('5')">5</button>
+      <button class="pin-key" onclick="pinKey('6')">6</button>
+      <button class="pin-key" onclick="pinKey('7')">7</button>
+      <button class="pin-key" onclick="pinKey('8')">8</button>
+      <button class="pin-key" onclick="pinKey('9')">9</button>
+      <button class="pin-key" onclick="pinKey('⌫')" style="color:var(--ts)">⌫</button>
+      <button class="pin-key" onclick="pinKey('0')">0</button>
+      <button class="pin-key" onclick="pinKey('✓')" style="color:var(--accent);font-size:16px">✓</button>
+    </div>
+    <div class="pin-error" id="pinError"></div>
+    <span class="pin-link" onclick="resetAll()">Forgot PIN? Reset everything</span>
+  </div>
+</div>
+
+<!-- ── SETUP SCREEN ── -->
+<div id="setupScreen" class="screen centered">
+  <div class="auth-box">
+    <div class="auth-logo">🗓️</div>
+    <h1>Set up Days Since</h1>
+    <p>Your data syncs across all browsers via a private GitHub Gist — only you can access it.</p>
+    <div style="margin-top:1.5rem">
+      <div class="setup-step">
+        <label>1 — Create a 4-digit PIN</label>
+        <input type="password" id="setupPin" maxlength="4" placeholder="e.g. 4829" inputmode="numeric"/>
+      </div>
+      <div class="setup-step">
+        <label>Confirm PIN</label>
+        <input type="password" id="setupPin2" maxlength="4" placeholder="Repeat PIN" inputmode="numeric"/>
+      </div>
+      <div class="setup-step">
+        <label>2 — GitHub Gist ID</label>
+        <input type="text" id="setupGistId" placeholder="e.g. 4b2d8f3e1a9c0765fedc"/>
+        <small>Go to <strong>gist.github.com</strong> → New secret gist → filename <code>days-since.json</code> → content <code>{}</code> → Create. Copy the ID from the URL.</small>
+      </div>
+      <div class="setup-step">
+        <label>3 — GitHub Personal Access Token</label>
+        <input type="password" id="setupToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"/>
+        <small>github.com/settings/tokens → Generate new token (classic) → tick <strong>gist</strong> scope only → copy.</small>
+      </div>
+      <div class="pin-error" id="setupError" style="margin-bottom:10px;text-align:left"></div>
+      <button class="btn-primary" onclick="completeSetup()">Get started →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MAIN SCREEN ── -->
+<div id="mainScreen" class="screen">
+  <div class="topbar">
+    <span class="topbar-title">🗓️ Days Since</span>
+    <button class="topbar-btn" onclick="syncNow()">↻ Sync</button>
+    <button class="topbar-btn dim" onclick="lockApp()">🔒 Lock</button>
   </div>
 
-  <div class="add-row">
-    <input type="text" id="newItem" placeholder="Add something to track… e.g. Exercise" />
-    <button onclick="addItem()">+ Add</button>
+  <div class="main-content">
+    <div class="notif-bar hidden" id="notifBar" onclick="requestNotifPermission()">
+      🔔 Enable notifications for milestone alerts (1 month · 69 · 100 · 200… days)
+    </div>
+    <div class="add-row">
+      <input type="text" id="newItem" placeholder="New activity…"/>
+      <select id="newLabel"><option value="">No label</option></select>
+      <button onclick="addItem()">+ Add</button>
+    </div>
+    <div class="labels-row" id="labelsRow"></div>
+    <div class="cards" id="cards"></div>
   </div>
 
-  <div class="cards" id="cards"></div>
+  <div class="sync-bar">
+    <div class="sync-dot" id="syncDot"></div>
+    <span id="syncStatus">Not synced yet</span>
+  </div>
+  <footer>Synced to your private GitHub Gist · Notifications fire on page open</footer>
+</div>
 
-  <footer>Data saved locally in your browser · Notifications fire when you open this page</footer>
+<!-- Labels Modal -->
+<div class="modal-overlay" id="labelModal">
+  <div class="modal">
+    <h2>Manage Labels</h2>
+    <div class="label-list" id="labelList"></div>
+    <div style="display:flex;gap:8px">
+      <input type="text" id="newLabelInput" placeholder="New label…" style="flex:1;padding:7px 12px;font-size:14px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg);color:var(--tp);font-family:var(--sans);outline:none"/>
+      <button onclick="addLabel()" style="padding:7px 14px;font-size:13px;font-weight:600;background:var(--accent);color:#fff;border:none;border-radius:var(--r);cursor:pointer">Add</button>
+    </div>
+    <div class="modal-actions">
+      <button class="primary" onclick="closeLabelModal()">Done</button>
+    </div>
+  </div>
 </div>
 
 <script>
-const KEY = 'days_since_v1';
-const NOTIFIED_KEY = 'days_since_notified';
+// ── STORAGE KEYS ──
+const CONF_KEY = 'dsc_conf';
+const CACHE_KEY = 'dsc_cache';
+const NF_KEY = 'dsc_nf';
 
-function load() {
-  try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch { return []; }
+let conf = null;   // { pinHash, gistId, token }
+let data = null;   // { items:[], labels:[] }
+let activeFilter = '';
+let pinBuffer = '';
+
+// ── UTILS ──
+function simpleHash(s){
+  let h=0; for(let i=0;i<s.length;i++) h=(Math.imul(31,h)+s.charCodeAt(i))|0;
+  return h.toString(36);
 }
-function save(items) { localStorage.setItem(KEY, JSON.stringify(items)); }
+function loadConf(){ try{ return JSON.parse(localStorage.getItem(CONF_KEY)); }catch{ return null; } }
+function saveConf(c){ localStorage.setItem(CONF_KEY,JSON.stringify(c)); }
+function loadCache(){ try{ return JSON.parse(localStorage.getItem(CACHE_KEY))||{items:[],labels:['Travel','Fitness','Health','Bike']}; }catch{ return {items:[],labels:['Travel','Fitness','Health','Bike']}; } }
+function saveCache(d){ localStorage.setItem(CACHE_KEY,JSON.stringify(d)); }
+function loadNotified(){ try{ return JSON.parse(localStorage.getItem(NF_KEY))||{}; }catch{ return {}; } }
+function saveNotified(n){ localStorage.setItem(NF_KEY,JSON.stringify(n)); }
 
-function loadNotified() {
-  try { return JSON.parse(localStorage.getItem(NOTIFIED_KEY)) || {}; } catch { return {}; }
+function daysSince(dateStr){
+  if(!dateStr) return null;
+  return Math.floor((Date.now()-new Date(dateStr).getTime())/86400000);
 }
-function saveNotified(n) { localStorage.setItem(NOTIFIED_KEY, JSON.stringify(n)); }
-
-function daysSince(dateStr) {
-  if (!dateStr) return null;
-  return Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000);
+function avgInterval(history){
+  if(!history||history.length<2) return null;
+  const s=[...history].sort();
+  let t=0; for(let i=1;i<s.length;i++) t+=new Date(s[i])-new Date(s[i-1]);
+  return Math.round(t/(s.length-1)/86400000);
 }
-
-function milestoneHit(days) {
-  if (days === null) return null;
-  if (days === 30) return '1 month';
-  if (days === 69) return '69 days';
-  if (days >= 100 && days % 100 === 0) return days + ' days';
+function milestoneHit(days){
+  if(days===null) return null;
+  if(days===30) return '1 month';
+  if(days===69) return '69 days';
+  if(days>=100&&days%100===0) return days+' days';
   return null;
 }
+function fmtDate(iso){
+  if(!iso) return '';
+  return new Date(iso).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'});
+}
 
-function render() {
-  const items = load();
-  const el = document.getElementById('cards');
-  if (!items.length) {
-    el.innerHTML = `<div class="empty">
+// ── SCREENS ──
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function setSyncStatus(state,msg){
+  document.getElementById('syncDot').className='sync-dot'+(state?' '+state:'');
+  document.getElementById('syncStatus').textContent=msg;
+}
+
+// ── BOOT ──
+function boot(){
+  conf=loadConf();
+  if(!conf){ showScreen('setupScreen'); return; }
+  showScreen('pinScreen');
+}
+
+// ── PIN ──
+function pinKey(k){
+  document.getElementById('pinError').textContent='';
+  if(k==='⌫') pinBuffer=pinBuffer.slice(0,-1);
+  else if(k==='✓'){ submitPin(); return; }
+  else if(pinBuffer.length<4) pinBuffer+=k;
+  if(pinBuffer.length===4) setTimeout(submitPin,80);
+  renderDots();
+}
+function renderDots(){
+  for(let i=0;i<4;i++) document.getElementById('d'+i).classList.toggle('filled',i<pinBuffer.length);
+}
+function submitPin(){
+  if(pinBuffer.length<4){ document.getElementById('pinError').textContent='Enter all 4 digits'; return; }
+  if(simpleHash(pinBuffer)!==conf.pinHash){
+    document.getElementById('pinError').textContent='Wrong PIN. Try again.';
+    pinBuffer=''; renderDots(); return;
+  }
+  pinBuffer=''; renderDots();
+  data=loadCache();
+  showScreen('mainScreen');
+  renderAll();
+  checkNotifBar();
+  pullGist();
+}
+function lockApp(){ pinBuffer=''; renderDots(); showScreen('pinScreen'); }
+function resetAll(){
+  if(confirm('Delete all local data and settings?')){ localStorage.clear(); location.reload(); }
+}
+
+// ── SETUP ──
+function completeSetup(){
+  const pin=document.getElementById('setupPin').value.trim();
+  const pin2=document.getElementById('setupPin2').value.trim();
+  const gistId=document.getElementById('setupGistId').value.trim();
+  const token=document.getElementById('setupToken').value.trim();
+  const err=document.getElementById('setupError');
+  if(!/^\d{4}$/.test(pin)){ err.textContent='PIN must be 4 digits'; return; }
+  if(pin!==pin2){ err.textContent='PINs do not match'; return; }
+  if(!gistId){ err.textContent='Gist ID is required'; return; }
+  if(!token){ err.textContent='GitHub token is required'; return; }
+  conf={ pinHash:simpleHash(pin), gistId, token };
+  saveConf(conf);
+  data=loadCache();
+  showScreen('mainScreen');
+  renderAll();
+  checkNotifBar();
+  pushGist();
+}
+
+// ── GITHUB GIST SYNC ──
+async function pullGist(){
+  setSyncStatus('busy','Syncing…');
+  try{
+    const res=await fetch(`https://api.github.com/gists/${conf.gistId}`,{
+      headers:{ Authorization:`token ${conf.token}`, Accept:'application/vnd.github.v3+json' }
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const json=await res.json();
+    const raw=(json.files['days-since.json']||{}).content||'{}';
+    const remote=JSON.parse(raw);
+    if(remote.items) data.items=remote.items;
+    if(remote.labels) data.labels=remote.labels;
+    saveCache(data);
+    setSyncStatus('ok','Synced '+new Date().toLocaleTimeString());
+    renderAll();
+    checkMilestones();
+  } catch(e){
+    setSyncStatus('err','Sync failed — using local data');
+    console.error(e);
+  }
+}
+
+async function pushGist(){
+  setSyncStatus('busy','Saving…');
+  try{
+    const res=await fetch(`https://api.github.com/gists/${conf.gistId}`,{
+      method:'PATCH',
+      headers:{ Authorization:`token ${conf.token}`, Accept:'application/vnd.github.v3+json', 'Content-Type':'application/json' },
+      body:JSON.stringify({ files:{ 'days-since.json':{ content:JSON.stringify(data,null,2) } } })
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    saveCache(data);
+    setSyncStatus('ok','Saved '+new Date().toLocaleTimeString());
+  } catch(e){
+    setSyncStatus('err','Save failed — data kept locally');
+    console.error(e);
+  }
+}
+
+async function syncNow(){ await pullGist(); }
+
+// ── RENDER ──
+function renderAll(){
+  renderLabelFilter();
+  renderLabelSelect();
+  renderCards();
+}
+
+function renderLabelFilter(){
+  const labels=data.labels||[];
+  let h=`<button class="label-chip${activeFilter===''?' active':''}" onclick="filterLabel('')">All</button>`;
+  labels.forEach(l=> h+=`<button class="label-chip${activeFilter===l?' active':''}" onclick="filterLabel('${l}')">${l}</button>`);
+  h+=`<button class="label-chip manage" onclick="openLabelModal()">⚙ Labels</button>`;
+  document.getElementById('labelsRow').innerHTML=h;
+}
+
+function renderLabelSelect(){
+  const sel=document.getElementById('newLabel');
+  sel.innerHTML='<option value="">No label</option>';
+  (data.labels||[]).forEach(l=> sel.innerHTML+=`<option value="${l}">${l}</option>`);
+}
+
+function renderCards(){
+  const el=document.getElementById('cards');
+  const items=(data.items||[]).filter(it=>!activeFilter||it.label===activeFilter);
+  if(!items.length){
+    el.innerHTML=`<div class="empty">
       <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
         <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
       </svg>
-      Nothing tracked yet.<br>Add something above to get started.
+      ${activeFilter?`No items labelled "${activeFilter}".`:'Nothing tracked yet.<br>Add something above to get started.'}
     </div>`;
     return;
   }
-
-  el.innerHTML = items.map((item, i) => {
-    const days = daysSince(item.lastDate);
-    const lastStr = item.lastDate
-      ? 'Last: ' + new Date(item.lastDate).toLocaleDateString(undefined, { day:'numeric', month:'short', year:'numeric' })
-      : 'Never logged';
-
-    let badgeClass, badgeText, daysColor;
-    const ms = milestoneHit(days);
-
-    if (days === null) {
-      badgeClass = 'badge-warn'; badgeText = 'not logged yet'; daysColor = 'var(--amber-text)';
-    } else if (days === 0) {
-      badgeClass = 'badge-ok'; badgeText = 'today'; daysColor = 'var(--green-text)';
-    } else if (days <= 7) {
-      badgeClass = 'badge-ok'; badgeText = days + 'd ago'; daysColor = 'var(--green-text)';
-    } else if (days <= 30) {
-      badgeClass = 'badge-warn'; badgeText = days + 'd ago'; daysColor = 'var(--amber-text)';
-    } else {
-      badgeClass = 'badge-alert'; badgeText = days + 'd ago'; daysColor = 'var(--red-text)';
-    }
-
-    const milestoneBadge = ms ? `<span class="badge badge-mile">🏁 ${ms} milestone!</span>` : '';
-    const cardClass = ms ? 'card milestone' : 'card';
-
-    const todayStr = new Date().toISOString().split('T')[0];
-    const currentVal = item.lastDate ? item.lastDate.split('T')[0] : todayStr;
-
-    return `<div class="${cardClass}" id="card-${i}">
+  el.innerHTML=items.map(item=>{
+    const i=data.items.indexOf(item);
+    const days=daysSince(item.lastDate);
+    const avg=avgInterval(item.history);
+    const ms=milestoneHit(days);
+    let bClass,bText,dColor;
+    if(days===null){ bClass='badge-warn'; bText='not logged yet'; dColor='var(--amber)'; }
+    else if(days===0){ bClass='badge-ok'; bText='today'; dColor='var(--accent)'; }
+    else if(days<=7){ bClass='badge-ok'; bText=days+'d ago'; dColor='var(--accent)'; }
+    else if(days<=30){ bClass='badge-warn'; bText=days+'d ago'; dColor='var(--amber)'; }
+    else{ bClass='badge-alert'; bText=days+'d ago'; dColor='var(--red)'; }
+    const todayStr=new Date().toISOString().split('T')[0];
+    const curVal=item.lastDate?item.lastDate.split('T')[0]:todayStr;
+    const histHtml=(item.history||[]).length
+      ? [...item.history].sort().reverse().map((h,hi)=>
+          `<div class="history-item"><span>${fmtDate(h)}</span><button onclick="removeHistory(${i},${hi})">✕</button></div>`
+        ).join('')
+      : '<div style="font-size:11px;color:var(--th)">No history yet</div>';
+    return `<div class="${ms?'card milestone':'card'}">
+      ${item.label?`<div class="card-label-tag">${item.label}</div>`:''}
       <div class="card-name" title="${item.name}">${item.name}</div>
-      <div class="card-days" style="color:${daysColor}">${days === null ? '—' : days}</div>
+      <div class="card-days" style="color:${dColor}">${days===null?'—':days}</div>
       <div class="card-sublabel">days since</div>
-      <div class="card-date">${lastStr}</div>
-      <span class="badge ${badgeClass}">${badgeText}</span>
-      ${milestoneBadge}
+      <div class="card-date">${item.lastDate?'Last: '+fmtDate(item.lastDate):'Never logged'}</div>
+      <span class="badge ${bClass}">${bText}</span>
+      ${ms?`<span class="badge" style="background:var(--amber-bg);color:var(--amber)">🏁 ${ms}!</span>`:''}
+      ${avg!==null?`<div class="card-avg">Avg interval: <span>${avg}d</span></div>`:''}
       <div class="card-actions">
         <button class="btn-done" onclick="markDone(${i})">✓ Did it</button>
-        <button class="btn-edit" onclick="toggleEdit(${i})" title="Edit date">✎ Edit</button>
-        <button class="btn-delete" onclick="removeItem(${i})" title="Remove">✕</button>
+        <button class="btn-sm" onclick="toggleEdit(${i})" title="Edit date">✎</button>
+        <button class="btn-sm" onclick="toggleHistory(${i})" title="History">📋</button>
+        <button class="btn-sm del" onclick="removeItem(${i})" title="Remove">✕</button>
       </div>
       <div class="edit-row" id="edit-${i}">
-        <input type="date" id="datepick-${i}" value="${currentVal}" max="${todayStr}" />
+        <input type="date" id="datepick-${i}" value="${curVal}" max="${todayStr}"/>
         <button class="btn-save" onclick="saveDate(${i})">Save</button>
-        <button class="btn-cancel" onclick="toggleEdit(${i})">Cancel</button>
+        <button class="btn-cancel-sm" onclick="toggleEdit(${i})">Cancel</button>
+      </div>
+      <div class="history-row" id="hist-${i}">
+        <h4>History</h4>
+        <div class="history-list">${histHtml}</div>
       </div>
     </div>`;
   }).join('');
 }
 
-function addItem() {
-  const input = document.getElementById('newItem');
-  const name = input.value.trim();
-  if (!name) return;
-  const items = load();
-  items.push({ name, lastDate: null });
-  save(items);
-  input.value = '';
-  render();
+// ── ACTIONS ──
+function filterLabel(l){ activeFilter=l; renderAll(); }
+
+function addItem(){
+  const inp=document.getElementById('newItem');
+  const label=document.getElementById('newLabel').value;
+  const name=inp.value.trim();
+  if(!name) return;
+  data.items.push({name,label,lastDate:null,history:[]});
+  inp.value='';
+  renderAll(); pushGist();
 }
 
-function markDone(i) {
-  const items = load();
-  items[i].lastDate = new Date().toISOString();
-  save(items);
-  render();
+function markDone(i){
+  if(data.items[i].lastDate) data.items[i].history.push(data.items[i].lastDate);
+  data.items[i].lastDate=new Date().toISOString();
+  renderAll(); pushGist();
 }
 
-function removeItem(i) {
-  const items = load();
-  items.splice(i, 1);
-  save(items);
-  render();
+function removeItem(i){
+  if(!confirm(`Remove "${data.items[i].name}"?`)) return;
+  data.items.splice(i,1);
+  renderAll(); pushGist();
 }
 
-function toggleEdit(i) {
-  const row = document.getElementById('edit-' + i);
-  row.classList.toggle('open');
+function toggleEdit(i){ document.getElementById('edit-'+i).classList.toggle('open'); }
+
+function saveDate(i){
+  const val=document.getElementById('datepick-'+i).value;
+  if(!val) return;
+  if(data.items[i].lastDate) data.items[i].history.push(data.items[i].lastDate);
+  data.items[i].lastDate=new Date(val).toISOString();
+  renderAll(); pushGist();
 }
 
-function saveDate(i) {
-  const val = document.getElementById('datepick-' + i).value;
-  if (!val) return;
-  const items = load();
-  items[i].lastDate = new Date(val).toISOString();
-  save(items);
-  render();
+function toggleHistory(i){ document.getElementById('hist-'+i).classList.toggle('open'); }
+
+function removeHistory(itemIdx,histIdx){
+  const sorted=[...data.items[itemIdx].history].sort().reverse();
+  const toRemove=sorted[histIdx];
+  data.items[itemIdx].history=data.items[itemIdx].history.filter(h=>h!==toRemove);
+  renderAll(); pushGist();
 }
 
-// Notifications
-function checkNotifBar() {
-  if (Notification.permission === 'default') {
+// ── LABELS ──
+function openLabelModal(){ renderLabelList(); document.getElementById('labelModal').classList.add('open'); }
+function closeLabelModal(){ document.getElementById('labelModal').classList.remove('open'); renderAll(); pushGist(); }
+
+function renderLabelList(){
+  document.getElementById('labelList').innerHTML=(data.labels||[]).map((l,i)=>
+    `<div class="label-list-item">
+      <input type="text" value="${l}" onchange="renameLabel(${i},this.value)"/>
+      <button onclick="deleteLabel(${i})">✕</button>
+    </div>`
+  ).join('');
+}
+
+function addLabel(){
+  const inp=document.getElementById('newLabelInput');
+  const name=inp.value.trim();
+  if(!name||data.labels.includes(name)) return;
+  data.labels.push(name); inp.value='';
+  saveCache(data); renderLabelList();
+}
+
+function renameLabel(i,val){
+  const old=data.labels[i]; data.labels[i]=val;
+  data.items.forEach(it=>{ if(it.label===old) it.label=val; });
+  saveCache(data);
+}
+
+function deleteLabel(i){
+  const name=data.labels[i];
+  if(!confirm(`Delete label "${name}"?`)) return;
+  data.labels.splice(i,1);
+  data.items.forEach(it=>{ if(it.label===name) it.label=''; });
+  saveCache(data); renderLabelList();
+}
+
+// ── NOTIFICATIONS ──
+function checkNotifBar(){
+  if(typeof Notification!=='undefined'&&Notification.permission==='default')
     document.getElementById('notifBar').classList.remove('hidden');
+}
+function requestNotifPermission(){
+  Notification.requestPermission().then(p=>{
+    if(p==='granted'){ document.getElementById('notifBar').classList.add('hidden'); checkMilestones(); }
+  });
+}
+function checkMilestones(){
+  if(typeof Notification==='undefined'||Notification.permission!=='granted') return;
+  const notified=loadNotified(); let changed=false;
+  (data.items||[]).forEach(item=>{
+    const days=daysSince(item.lastDate);
+    const ms=milestoneHit(days);
+    if(!ms) return;
+    const nkey=item.name+':'+days;
+    if(!notified[nkey]){
+      new Notification('Days Since — '+item.name,{ body:`It's been ${ms} since you last did "${item.name}".` });
+      notified[nkey]=true; changed=true;
+    }
+  });
+  if(changed) saveNotified(notified);
+}
+
+// ── KEYBOARD ──
+document.addEventListener('keydown',e=>{
+  if(document.getElementById('pinScreen').classList.contains('active')){
+    if(e.key>='0'&&e.key<='9') pinKey(e.key);
+    else if(e.key==='Backspace') pinKey('⌫');
+    else if(e.key==='Enter') pinKey('✓');
   }
-}
-
-function requestNotifPermission() {
-  Notification.requestPermission().then(p => {
-    if (p === 'granted') {
-      document.getElementById('notifBar').classList.add('hidden');
-      checkMilestones();
-    }
-  });
-}
-
-function checkMilestones() {
-  if (Notification.permission !== 'granted') return;
-  const items = load();
-  const notified = loadNotified();
-  let changed = false;
-
-  items.forEach(item => {
-    const days = daysSince(item.lastDate);
-    const ms = milestoneHit(days);
-    if (!ms) return;
-
-    const nkey = item.name + ':' + days;
-    if (!notified[nkey]) {
-      new Notification('Days Since — ' + item.name, {
-        body: `It's been ${ms} since you last did "${item.name}". Time to get back to it?`,
-        icon: ''
-      });
-      notified[nkey] = true;
-      changed = true;
-    }
-  });
-
-  if (changed) saveNotified(notified);
-}
-
-document.getElementById('newItem').addEventListener('keydown', e => {
-  if (e.key === 'Enter') addItem();
 });
+document.getElementById('newItem').addEventListener('keydown',e=>{ if(e.key==='Enter') addItem(); });
 
-// Init
-const existing = load();
-if (!existing.length) {
-  save([{ name: 'Exercise', lastDate: null }]);
-}
-
-render();
-checkNotifBar();
-checkMilestones();
+boot();
 </script>
 </body>
 </html>
