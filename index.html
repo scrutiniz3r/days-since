@@ -5,632 +5,693 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Days Since</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#F0EEE9;--surface:#FAFAF8;--surface2:#F2F0EB;--border:#DDD9D0;--border2:#E8E5DE;
-  --tp:#1C1B17;--ts:#6B6860;--th:#ADAA9F;
-  --accent:#2D6A2D;--accent-light:#EBF4EB;
-  --amber:#7A4F10;--amber-bg:#FAF0E0;
-  --red:#7A1F1F;--red-bg:#FAEBEB;
-  --blue:#1A4FA0;--blue-bg:#EBF0FA;
-  --pill-r:20px;--card-r:16px;--r:10px;
-  --mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif;
+  --bg:#F8F7F4;
+  --surface:#FFFFFF;
+  --border:#E8E5DF;
+  --border2:#F0EDE7;
+  --tp:#1A1917;
+  --ts:#6B6760;
+  --th:#B0ADA6;
+  --accent:#4A7A4A;
+  --accent-bg:#EEF5EE;
+  --amber:#8A5A10;
+  --amber-bg:#FBF3E4;
+  --red:#8A2020;
+  --red-bg:#FAEAEA;
+  --r:12px;--pill:100px;
+  --serif:'Instrument Serif',Georgia,serif;
+  --sans:'Inter',system-ui,sans-serif;
+  --ease:cubic-bezier(.4,0,.2,1);
 }
-@media(prefers-color-scheme:dark){
-  :root{
-    --bg:#18181A;--surface:#222225;--surface2:#2A2A2E;--border:#333338;--border2:#2E2E33;
-    --tp:#F0EFF0;--ts:#9A9899;--th:#58575C;
-    --accent:#72C472;--accent-light:#1A3A1A;
-    --amber:#F0B060;--amber-bg:#3A2A0A;
-    --red:#F08080;--red-bg:#3A1010;
-    --blue:#80A8F0;--blue-bg:#10204A;
-  }
-}
-body{font-family:var(--sans);background:var(--bg);color:var(--tp);min-height:100vh}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#141412;--surface:#1E1D1B;--border:#2C2B28;--border2:#252422;
+  --tp:#F2F0EB;--ts:#8A8780;--th:#4A4845;
+  --accent:#78B878;--accent-bg:#1A2E1A;
+  --amber:#E8A840;--amber-bg:#2C2010;
+  --red:#E87070;--red-bg:#2C1010;
+}}
+
+body{font-family:var(--sans);background:var(--bg);color:var(--tp);min-height:100vh;-webkit-font-smoothing:antialiased}
 .screen{display:none;min-height:100vh}
 .screen.active{display:flex;flex-direction:column}
-.centered{align-items:center;justify-content:center;padding:2rem}
-.auth-box{width:100%;max-width:380px}
-.auth-logo{font-size:36px;margin-bottom:1rem;text-align:center}
-.auth-box h1{font-size:22px;font-weight:600;margin-bottom:6px}
-.auth-box p{font-size:14px;color:var(--ts);margin-bottom:1.5rem;line-height:1.6}
 
-/* PIN */
-.pin-dots{display:flex;gap:12px;justify-content:center;margin-bottom:1.5rem}
-.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border);background:transparent;transition:background .15s,border-color .15s}
-.pin-dot.filled{background:var(--accent);border-color:var(--accent)}
-.pin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:240px;margin:0 auto 1rem}
-.pin-key{padding:16px;font-size:20px;font-weight:500;font-family:var(--mono);border:1px solid var(--border);border-radius:var(--r);background:var(--surface);color:var(--tp);cursor:pointer;transition:background .1s}
-.pin-key:hover{background:var(--surface2)}
-.pin-key:active{background:var(--border)}
-.err-msg{font-size:13px;color:var(--red);min-height:20px;margin-top:4px;text-align:center}
-.auth-link{font-size:13px;color:var(--ts);cursor:pointer;text-decoration:underline;margin-top:10px;display:block;text-align:center}
-.auth-switch{font-size:13px;color:var(--ts);text-align:center;margin-top:16px;padding-top:16px;border-top:1px solid var(--border2)}
-.auth-switch a{color:var(--accent);cursor:pointer;text-decoration:none;font-weight:500}
-.auth-switch a:hover{text-decoration:underline}
+/* ── AUTH SCREENS ── */
+.auth-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:2rem}
+.auth-card{width:100%;max-width:360px}
+.auth-eyebrow{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--th);margin-bottom:1.5rem}
+.auth-headline{font-family:var(--serif);font-size:32px;line-height:1.15;margin-bottom:.5rem}
+.auth-sub{font-size:14px;color:var(--ts);line-height:1.6;margin-bottom:2rem}
 
-/* SETUP / LOGIN FORMS */
-.setup-step{margin-bottom:1.25rem}
-.setup-step label{display:block;font-size:13px;font-weight:500;margin-bottom:6px;color:var(--ts)}
-.setup-step input{width:100%;padding:10px 14px;font-size:14px;border:1px solid var(--border);border-radius:var(--r);background:var(--surface);color:var(--tp);outline:none;font-family:var(--sans)}
-.setup-step input:focus{border-color:var(--accent)}
-.setup-step small{display:block;font-size:12px;color:var(--th);margin-top:5px;line-height:1.6}
-.btn-primary{width:100%;padding:12px;font-size:15px;font-weight:600;background:var(--accent);color:#fff;border:none;border-radius:var(--r);cursor:pointer;transition:opacity .15s;margin-top:4px}
-.btn-primary:hover{opacity:.85}
+/* PIN dots */
+.pin-dots{display:flex;gap:10px;margin-bottom:2rem}
+.pin-dot{width:12px;height:12px;border-radius:50%;border:1.5px solid var(--border);background:transparent;transition:all .2s var(--ease)}
+.pin-dot.filled{background:var(--tp);border-color:var(--tp);transform:scale(1.1)}
+.pin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem}
+.pin-key{padding:18px;font-size:18px;font-weight:500;font-family:var(--sans);border:1px solid var(--border);border-radius:var(--r);background:var(--surface);color:var(--tp);cursor:pointer;transition:background .1s,transform .1s;user-select:none}
+.pin-key:hover{background:var(--border2)}
+.pin-key:active{transform:scale(.96);background:var(--border)}
+.err{font-size:13px;color:var(--red);min-height:18px;margin-top:2px}
+.text-link{font-size:13px;color:var(--ts);cursor:pointer;text-decoration:underline;text-underline-offset:3px;margin-top:12px;display:inline-block}
+.auth-foot{font-size:13px;color:var(--ts);margin-top:20px;padding-top:20px;border-top:1px solid var(--border)}
+.auth-foot a{color:var(--accent);cursor:pointer;font-weight:500;text-decoration:none}
+.auth-foot a:hover{text-decoration:underline}
 
-/* TOPBAR */
-.topbar{display:flex;align-items:center;gap:10px;padding:1.1rem 1.5rem;border-bottom:1px solid var(--border2);background:var(--surface)}
-.topbar-title{font-size:18px;font-weight:600;flex:1}
-.topbar-btn{padding:7px 14px;font-size:13px;font-weight:500;border:1px solid var(--border);border-radius:var(--pill-r);background:transparent;color:var(--ts);cursor:pointer;transition:all .15s;white-space:nowrap}
-.topbar-btn:hover{border-color:var(--accent);color:var(--accent)}
-.topbar-btn.dim{color:var(--th)}
+/* Setup form */
+.field{margin-bottom:1.25rem}
+.field label{display:block;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--th);margin-bottom:7px}
+.field input{width:100%;padding:11px 14px;font-size:14px;border:1px solid var(--border);border-radius:var(--r);background:var(--surface);color:var(--tp);outline:none;font-family:var(--sans);transition:border-color .15s}
+.field input:focus{border-color:var(--accent)}
+.field small{display:block;font-size:12px;color:var(--th);margin-top:6px;line-height:1.6}
+.field small code{background:var(--border2);padding:1px 5px;border-radius:4px;font-size:11px}
+.btn-cta{width:100%;padding:13px;font-size:14px;font-weight:600;background:var(--tp);color:var(--bg);border:none;border-radius:var(--r);cursor:pointer;transition:opacity .15s;margin-top:4px;letter-spacing:.01em}
+.btn-cta:hover{opacity:.85}
 
-/* MAIN */
-.main-content{padding:1.5rem;max-width:900px;margin:0 auto;width:100%}
-.notif-bar{display:flex;align-items:center;gap:10px;background:var(--blue-bg);color:var(--blue);border-radius:var(--r);padding:10px 14px;font-size:13px;margin-bottom:1.25rem;cursor:pointer}
-.notif-bar:hover{opacity:.85}
-.notif-bar.hidden{display:none}
-.add-row{display:flex;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap}
-.add-row input,.add-row select{padding:10px 14px;font-size:14px;border:1px solid var(--border);border-radius:var(--r);background:var(--surface);color:var(--tp);outline:none;font-family:var(--sans)}
-.add-row input{flex:1;min-width:140px}
-.add-row input:focus,.add-row select:focus{border-color:var(--accent)}
-.add-row select{min-width:120px}
-.add-row button{padding:10px 18px;font-size:14px;font-weight:600;background:var(--accent);color:#fff;border:none;border-radius:var(--r);cursor:pointer}
-.add-row button:hover{opacity:.85}
-.labels-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.25rem;align-items:center}
-.label-chip{padding:5px 14px;font-size:12px;font-weight:500;border:1px solid var(--border);border-radius:var(--pill-r);background:transparent;color:var(--ts);cursor:pointer;transition:all .15s}
-.label-chip:hover{border-color:var(--accent);color:var(--accent)}
-.label-chip.active{background:var(--accent);color:#fff;border-color:var(--accent)}
-.label-chip.manage{color:var(--th);border-style:dashed}
+/* ── TOPBAR ── */
+.topbar{display:flex;align-items:center;gap:10px;padding:1rem 1.5rem;border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:10}
+.topbar-logo{font-family:var(--serif);font-size:20px;flex:1;color:var(--tp)}
+.topbar-logo span{color:var(--th);font-style:italic}
+.icon-btn{width:36px;height:36px;border-radius:50%;border:1px solid var(--border);background:transparent;color:var(--ts);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .15s;flex-shrink:0}
+.icon-btn:hover{border-color:var(--tp);color:var(--tp)}
 
-/* CARDS */
-.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:12px}
-.card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--card-r);padding:1.1rem 1.25rem;display:flex;flex-direction:column;gap:5px;position:relative}
-.card.milestone{border-color:var(--amber)}
-.card-label-tag{position:absolute;top:12px;right:12px;font-size:10px;font-weight:500;padding:2px 8px;border-radius:var(--pill-r);background:var(--surface2);color:var(--ts);border:1px solid var(--border)}
-.card-name{font-size:14px;font-weight:600;padding-right:64px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.card-days{font-size:42px;font-weight:500;font-family:var(--mono);line-height:1;margin:6px 0 2px}
-.card-sublabel{font-size:11px;color:var(--ts);text-transform:uppercase;letter-spacing:.5px}
-.card-date{font-size:11px;color:var(--th);margin-top:3px}
-.card-avg{font-size:11px;color:var(--ts);margin-top:1px}
-.card-avg span{font-family:var(--mono);font-weight:500;color:var(--tp)}
-.badge{display:inline-block;font-size:11px;font-weight:500;padding:3px 10px;border-radius:var(--pill-r);margin-top:4px;width:fit-content}
-.badge-ok{background:var(--accent-light);color:var(--accent)}
-.badge-warn{background:var(--amber-bg);color:var(--amber)}
-.badge-alert{background:var(--red-bg);color:var(--red)}
-.card-actions{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
-.btn-done{flex:1;padding:7px 0;font-size:12px;font-weight:600;background:var(--accent-light);color:var(--accent);border:1px solid transparent;border-radius:var(--r);cursor:pointer;min-width:60px}
-.btn-done:hover{opacity:.8}
-.btn-sm{padding:7px 9px;font-size:12px;background:transparent;color:var(--th);border:1px solid var(--border);border-radius:var(--r);cursor:pointer}
-.btn-sm:hover{color:var(--tp);border-color:var(--ts)}
-.btn-sm.del:hover{color:var(--red);border-color:var(--red)}
-.edit-row{display:none;gap:6px;margin-top:6px;flex-wrap:wrap}
-.edit-row.open{display:flex}
-.edit-row input[type=date]{flex:1;padding:6px 10px;font-size:13px;min-width:130px;border:1px solid var(--border);border-radius:var(--r);background:var(--surface);color:var(--tp);outline:none;font-family:var(--sans)}
-.edit-row input[type=date]:focus{border-color:var(--accent)}
-.btn-save{padding:6px 12px;font-size:12px;font-weight:600;background:var(--accent);color:#fff;border:none;border-radius:var(--r);cursor:pointer}
-.btn-cancel-sm{padding:6px 10px;font-size:12px;background:transparent;color:var(--th);border:1px solid var(--border);border-radius:var(--r);cursor:pointer}
-.history-row{display:none;margin-top:8px;padding-top:8px;border-top:1px solid var(--border2)}
-.history-row.open{display:block}
-.history-row h4{font-size:11px;font-weight:600;color:var(--ts);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
-.history-list{max-height:110px;overflow-y:auto;display:flex;flex-direction:column;gap:4px}
-.history-item{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--ts)}
-.history-item button{font-size:10px;color:var(--th);background:none;border:none;cursor:pointer;padding:1px 4px}
-.history-item button:hover{color:var(--red)}
-.empty{grid-column:1/-1;text-align:center;padding:4rem 1rem;color:var(--th);font-size:14px;line-height:1.8}
-.empty svg{display:block;margin:0 auto 12px;opacity:.3}
+/* ── MAIN ── */
+.main{flex:1;max-width:680px;margin:0 auto;width:100%;padding:1.5rem}
 
-/* MODAL */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:center;justify-content:center;padding:1rem}
-.modal-overlay.open{display:flex}
-.modal{background:var(--surface);border-radius:var(--card-r);padding:1.5rem;width:100%;max-width:360px;border:1px solid var(--border)}
-.modal h2{font-size:17px;font-weight:600;margin-bottom:1rem}
-.label-list{display:flex;flex-direction:column;gap:8px;margin-bottom:1rem;max-height:240px;overflow-y:auto}
-.label-list-item{display:flex;align-items:center;gap:8px}
-.label-list-item input{flex:1;padding:7px 12px;font-size:14px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg);color:var(--tp);font-family:var(--sans);outline:none}
-.label-list-item input:focus{border-color:var(--accent)}
-.label-list-item button{padding:6px 9px;font-size:12px;border:1px solid var(--border);border-radius:var(--r);background:transparent;color:var(--th);cursor:pointer}
-.label-list-item button:hover{color:var(--red);border-color:var(--red)}
-.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:1rem}
-.modal-actions button{padding:8px 16px;font-size:13px;font-weight:500;border-radius:var(--r);cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--ts)}
-.modal-actions button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+/* notif bar */
+.notif-strip{display:flex;align-items:center;gap:10px;background:var(--amber-bg);color:var(--amber);border-radius:var(--r);padding:11px 14px;font-size:13px;margin-bottom:1.5rem;cursor:pointer;border:1px solid transparent}
+.notif-strip:hover{opacity:.85}
+.notif-strip.off{display:none}
 
-/* SYNC BAR */
-.sync-bar{display:flex;align-items:center;gap:8px;padding:.6rem 1.5rem;font-size:12px;color:var(--th);border-top:1px solid var(--border2);background:var(--surface);margin-top:auto}
-.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--th);flex-shrink:0}
-.sync-dot.ok{background:var(--accent)}
-.sync-dot.err{background:var(--red)}
-.sync-dot.busy{background:var(--amber);animation:pulse 1s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-footer{padding:.6rem 1.5rem;text-align:center;font-size:11px;color:var(--th)}
+/* add bar */
+.add-bar{display:flex;gap:8px;margin-bottom:1.75rem;align-items:stretch}
+.add-input{flex:1;padding:11px 14px;font-size:14px;border:1px solid var(--border);border-radius:var(--r);background:var(--surface);color:var(--tp);outline:none;font-family:var(--sans);transition:border-color .15s}
+.add-input:focus{border-color:var(--accent)}
+.add-input::placeholder{color:var(--th)}
+.label-sel{padding:11px 12px;font-size:13px;border:1px solid var(--border);border-radius:var(--r);background:var(--surface);color:var(--tp);outline:none;font-family:var(--sans);cursor:pointer;min-width:110px}
+.add-btn{padding:11px 18px;font-size:14px;font-weight:600;background:var(--tp);color:var(--bg);border:none;border-radius:var(--r);cursor:pointer;white-space:nowrap;transition:opacity .15s}
+.add-btn:hover{opacity:.8}
+
+/* filter chips */
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.5rem}
+.chip{padding:5px 14px;font-size:12px;font-weight:500;border:1px solid var(--border);border-radius:var(--pill);background:transparent;color:var(--ts);cursor:pointer;transition:all .15s;white-space:nowrap}
+.chip:hover{border-color:var(--tp);color:var(--tp)}
+.chip.on{background:var(--tp);color:var(--bg);border-color:var(--tp)}
+.chip.mgmt{color:var(--th);border-style:dashed}
+.chip.mgmt:hover{color:var(--ts);border-color:var(--ts)}
+
+/* ── ITEM CARDS ── */
+.items{display:flex;flex-direction:column;gap:2px}
+
+.item{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;transition:border-color .2s}
+.item:hover{border-color:var(--ts)}
+.item.open{border-color:var(--tp)}
+.item.milestone{border-color:var(--amber)}
+
+.item-head{display:flex;align-items:baseline;gap:0;padding:1.1rem 1.25rem;cursor:pointer;user-select:none;gap:12px}
+.item-sentence{flex:1;font-family:var(--serif);font-size:20px;line-height:1.35;color:var(--tp)}
+.item-sentence .count{font-size:28px;font-style:italic;color:var(--accent)}
+.item-sentence .count.warn{color:var(--amber)}
+.item-sentence .count.alert{color:var(--red)}
+.item-sentence .name{font-style:italic}
+.item-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.item-label-chip{font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:3px 9px;border-radius:var(--pill);background:var(--border2);color:var(--ts)}
+.item-chevron{font-size:12px;color:var(--th);transition:transform .25s var(--ease)}
+.item.open .item-chevron{transform:rotate(180deg)}
+.item-sub{font-size:12px;color:var(--th);padding:0 1.25rem .75rem;margin-top:-4px;display:flex;align-items:center;gap:12px}
+.item-sub .avg{font-size:12px;color:var(--ts)}
+
+/* drawer */
+.item-drawer{display:grid;grid-template-rows:0fr;transition:grid-template-rows .28s var(--ease)}
+.item.open .item-drawer{grid-template-rows:1fr}
+.item-drawer-inner{overflow:hidden}
+.item-drawer-content{padding:0 1.25rem 1.25rem;border-top:1px solid var(--border2)}
+
+/* drawer sections */
+.drawer-section{margin-top:1.1rem}
+.drawer-label{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--th);margin-bottom:.6rem}
+
+/* add entry */
+.add-entry-row{display:flex;gap:7px;align-items:center}
+.date-input{flex:1;padding:8px 12px;font-size:13px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg);color:var(--tp);outline:none;font-family:var(--sans)}
+.date-input:focus{border-color:var(--accent)}
+.btn-add-entry{padding:8px 14px;font-size:13px;font-weight:600;background:var(--accent);color:#fff;border:none;border-radius:var(--r);cursor:pointer;white-space:nowrap}
+.btn-add-entry:hover{opacity:.85}
+
+/* history list */
+.hist-list{display:flex;flex-direction:column;gap:4px;max-height:160px;overflow-y:auto}
+.hist-item{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;transition:background .1s}
+.hist-item:hover{background:var(--border2)}
+.hist-date{flex:1;font-size:13px;color:var(--ts)}
+.hist-badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:var(--pill);background:var(--accent-bg);color:var(--accent)}
+.hist-del{width:24px;height:24px;border-radius:6px;border:none;background:transparent;color:var(--th);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .1s;flex-shrink:0}
+.hist-del:hover{background:var(--red-bg);color:var(--red)}
+.hist-empty{font-size:13px;color:var(--th);padding:6px 10px}
+
+/* drawer actions */
+.drawer-actions{display:flex;gap:7px;margin-top:1.1rem;padding-top:1rem;border-top:1px solid var(--border2)}
+.btn-ghost{padding:7px 14px;font-size:13px;font-weight:500;border:1px solid var(--border);border-radius:var(--r);background:transparent;color:var(--ts);cursor:pointer;transition:all .15s}
+.btn-ghost:hover{border-color:var(--ts);color:var(--tp)}
+.btn-danger{padding:7px 14px;font-size:13px;font-weight:500;border:1px solid transparent;border-radius:var(--r);background:transparent;color:var(--th);cursor:pointer;transition:all .15s;margin-left:auto}
+.btn-danger:hover{border-color:var(--red);color:var(--red);background:var(--red-bg)}
+
+/* milestone banner */
+.ms-banner{display:flex;align-items:center;gap:8px;background:var(--amber-bg);color:var(--amber);border-radius:8px;padding:8px 12px;font-size:13px;font-weight:500;margin-top:1rem}
+
+/* empty */
+.empty-state{text-align:center;padding:4rem 1rem;color:var(--th)}
+.empty-state p{font-family:var(--serif);font-size:22px;font-style:italic;margin-bottom:.5rem;color:var(--ts)}
+.empty-state small{font-size:13px}
+
+/* modal */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:50;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(2px)}
+.overlay.on{display:flex}
+.modal{background:var(--surface);border-radius:16px;padding:1.5rem;width:100%;max-width:340px;border:1px solid var(--border)}
+.modal-head{font-size:16px;font-weight:600;margin-bottom:1rem}
+.lbl-list{display:flex;flex-direction:column;gap:7px;max-height:220px;overflow-y:auto;margin-bottom:1rem}
+.lbl-row{display:flex;gap:7px;align-items:center}
+.lbl-row input{flex:1;padding:8px 12px;font-size:14px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg);color:var(--tp);font-family:var(--sans);outline:none}
+.lbl-row input:focus{border-color:var(--accent)}
+.lbl-row button{padding:7px 9px;border:1px solid var(--border);border-radius:var(--r);background:transparent;color:var(--th);cursor:pointer;font-size:13px}
+.lbl-row button:hover{color:var(--red);border-color:var(--red)}
+.new-lbl-row{display:flex;gap:7px;margin-bottom:1rem}
+.new-lbl-row input{flex:1;padding:8px 12px;font-size:14px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg);color:var(--tp);font-family:var(--sans);outline:none}
+.new-lbl-row input:focus{border-color:var(--accent)}
+.new-lbl-row button{padding:8px 14px;font-size:13px;font-weight:600;background:var(--accent);color:#fff;border:none;border-radius:var(--r);cursor:pointer}
+.modal-foot{display:flex;justify-content:flex-end}
+.modal-foot button{padding:8px 18px;font-size:13px;font-weight:600;background:var(--tp);color:var(--bg);border:none;border-radius:var(--r);cursor:pointer}
+
+/* sync */
+.syncbar{display:flex;align-items:center;gap:8px;padding:.6rem 1.5rem;font-size:12px;color:var(--th);border-top:1px solid var(--border);background:var(--surface)}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--th);flex-shrink:0}
+.dot.ok{background:var(--accent)}
+.dot.err{background:var(--red)}
+.dot.busy{background:var(--amber);animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+@media(max-width:500px){
+  .item-sentence{font-size:17px}
+  .item-sentence .count{font-size:23px}
+  .add-bar{flex-wrap:wrap}
+  .label-sel{min-width:0;flex:1}
+}
 </style>
 </head>
 <body>
 
-<!-- ── LOGIN SCREEN ── -->
-<div id="loginScreen" class="screen centered">
-  <div class="auth-box">
-    <div class="auth-logo">🗓️</div>
-    <h1 style="text-align:center">Welcome back</h1>
-    <p style="text-align:center">Enter your PIN to unlock your tracker.</p>
-    <div class="pin-dots">
-      <div class="pin-dot" id="d0"></div><div class="pin-dot" id="d1"></div>
-      <div class="pin-dot" id="d2"></div><div class="pin-dot" id="d3"></div>
+<!-- LOGIN -->
+<div id="loginScreen" class="screen active">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-eyebrow">Days Since</div>
+      <h1 class="auth-headline">Welcome<br>back.</h1>
+      <p class="auth-sub">Enter your PIN to unlock your tracker.</p>
+      <div class="pin-dots">
+        <div class="pin-dot" id="d0"></div><div class="pin-dot" id="d1"></div>
+        <div class="pin-dot" id="d2"></div><div class="pin-dot" id="d3"></div>
+      </div>
+      <div class="pin-grid">
+        <button class="pin-key" onclick="pk('1')">1</button>
+        <button class="pin-key" onclick="pk('2')">2</button>
+        <button class="pin-key" onclick="pk('3')">3</button>
+        <button class="pin-key" onclick="pk('4')">4</button>
+        <button class="pin-key" onclick="pk('5')">5</button>
+        <button class="pin-key" onclick="pk('6')">6</button>
+        <button class="pin-key" onclick="pk('7')">7</button>
+        <button class="pin-key" onclick="pk('8')">8</button>
+        <button class="pin-key" onclick="pk('9')">9</button>
+        <button class="pin-key" onclick="pk('⌫')" style="color:var(--th)">⌫</button>
+        <button class="pin-key" onclick="pk('0')">0</button>
+        <button class="pin-key" onclick="pk('✓')" style="color:var(--accent)">✓</button>
+      </div>
+      <div class="err" id="loginErr"></div>
+      <span class="text-link" onclick="resetAll()">Forgot PIN? Reset everything</span>
+      <div class="auth-foot">First time here? <a onclick="go('setupScreen')">Create an account</a></div>
     </div>
-    <div class="pin-grid">
-      <button class="pin-key" onclick="pinKey('1')">1</button>
-      <button class="pin-key" onclick="pinKey('2')">2</button>
-      <button class="pin-key" onclick="pinKey('3')">3</button>
-      <button class="pin-key" onclick="pinKey('4')">4</button>
-      <button class="pin-key" onclick="pinKey('5')">5</button>
-      <button class="pin-key" onclick="pinKey('6')">6</button>
-      <button class="pin-key" onclick="pinKey('7')">7</button>
-      <button class="pin-key" onclick="pinKey('8')">8</button>
-      <button class="pin-key" onclick="pinKey('9')">9</button>
-      <button class="pin-key" onclick="pinKey('⌫')" style="color:var(--ts)">⌫</button>
-      <button class="pin-key" onclick="pinKey('0')">0</button>
-      <button class="pin-key" onclick="pinKey('✓')" style="color:var(--accent);font-size:16px">✓</button>
-    </div>
-    <div class="err-msg" id="loginError"></div>
-    <span class="auth-link" onclick="resetAll()">Forgot PIN? Reset everything</span>
-    <div class="auth-switch">New here? <a onclick="showScreen('setupScreen')">Create an account</a></div>
   </div>
 </div>
 
-<!-- ── SETUP SCREEN ── -->
-<div id="setupScreen" class="screen centered">
-  <div class="auth-box">
-    <div class="auth-logo">🗓️</div>
-    <h1>Create your tracker</h1>
-    <p>Your data syncs privately via a GitHub Gist. Takes 2 minutes to set up.</p>
-    <div class="setup-step">
-      <label>1 — Choose a 4-digit PIN</label>
-      <input type="password" id="setupPin" maxlength="4" placeholder="e.g. 4829" inputmode="numeric"/>
+<!-- SETUP -->
+<div id="setupScreen" class="screen">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-eyebrow">Days Since</div>
+      <h1 class="auth-headline">Start<br>tracking.</h1>
+      <p class="auth-sub">Your data syncs privately across all your browsers via a GitHub Gist.</p>
+      <div class="field">
+        <label>Choose a PIN</label>
+        <input type="password" id="sPin" maxlength="4" placeholder="4 digits" inputmode="numeric"/>
+      </div>
+      <div class="field">
+        <label>Confirm PIN</label>
+        <input type="password" id="sPin2" maxlength="4" placeholder="Repeat" inputmode="numeric"/>
+      </div>
+      <div class="field">
+        <label>GitHub Gist ID</label>
+        <input type="text" id="sGist" placeholder="e.g. 4b2d8f3e1a9c0765fedc"/>
+        <small>gist.github.com → New secret gist → filename <code>days-since.json</code> → content <code>{}</code> → Create. Copy the ID from the URL.</small>
+      </div>
+      <div class="field">
+        <label>GitHub Token</label>
+        <input type="password" id="sToken" placeholder="ghp_…"/>
+        <small>github.com/settings/tokens → Generate new token (classic) → tick <code>gist</code> scope only.</small>
+      </div>
+      <div class="err" id="setupErr" style="text-align:left;margin-bottom:10px"></div>
+      <button class="btn-cta" onclick="doSetup()">Get started</button>
+      <div class="auth-foot">Already set up? <a onclick="go('loginScreen')">Log in</a></div>
     </div>
-    <div class="setup-step">
-      <label>Confirm PIN</label>
-      <input type="password" id="setupPin2" maxlength="4" placeholder="Repeat PIN" inputmode="numeric"/>
-    </div>
-    <div class="setup-step">
-      <label>2 — GitHub Gist ID</label>
-      <input type="text" id="setupGistId" placeholder="e.g. 4b2d8f3e1a9c0765fedc"/>
-      <small>Go to <strong>gist.github.com</strong> → New secret gist → filename <code>days-since.json</code> → content <code>{}</code> → Create. Copy the ID from the URL.</small>
-    </div>
-    <div class="setup-step">
-      <label>3 — GitHub Personal Access Token</label>
-      <input type="password" id="setupToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"/>
-      <small>github.com/settings/tokens → Generate new token (classic) → tick <strong>gist</strong> scope only → copy.</small>
-    </div>
-    <div class="err-msg" id="setupError" style="text-align:left;margin-bottom:10px"></div>
-    <button class="btn-primary" onclick="completeSetup()">Get started →</button>
-    <div class="auth-switch">Already set up? <a onclick="showScreen('loginScreen')">Log in</a></div>
   </div>
 </div>
 
-<!-- ── MAIN SCREEN ── -->
+<!-- MAIN -->
 <div id="mainScreen" class="screen">
   <div class="topbar">
-    <span class="topbar-title">🗓️ Days Since</span>
-    <button class="topbar-btn" onclick="syncNow()">↻ Sync</button>
-    <button class="topbar-btn dim" onclick="lockApp()">🔒 Lock</button>
+    <span class="topbar-logo">Days <span>since</span></span>
+    <button class="icon-btn" onclick="syncNow()" title="Sync">↻</button>
+    <button class="icon-btn" onclick="lockApp()" title="Lock">🔒</button>
   </div>
-  <div class="main-content">
-    <div class="notif-bar hidden" id="notifBar" onclick="requestNotifPermission()">
-      🔔 Enable notifications for milestone alerts (1 month · 69 · 100 · 200… days)
+
+  <div class="main">
+    <div class="notif-strip off" id="notifStrip" onclick="askNotif()">
+      🔔 Tap to get milestone notifications when you open this page
     </div>
-    <div class="add-row">
-      <input type="text" id="newItem" placeholder="New activity…"/>
-      <select id="newLabel"><option value="">No label</option></select>
-      <button onclick="addItem()">+ Add</button>
+
+    <div class="add-bar">
+      <input class="add-input" id="newName" placeholder="What do you want to track?"/>
+      <select class="label-sel" id="newLbl"><option value="">No label</option></select>
+      <button class="add-btn" onclick="addItem()">+ Add</button>
     </div>
-    <div class="labels-row" id="labelsRow"></div>
-    <div class="cards" id="cards"></div>
+
+    <div class="chips" id="chips"></div>
+    <div class="items" id="items"></div>
   </div>
-  <div class="sync-bar">
-    <div class="sync-dot" id="syncDot"></div>
-    <span id="syncStatus">Not synced yet</span>
-  </div>
-  <footer>Synced to your private GitHub Gist · Notifications fire on page open</footer>
+
+  <div class="syncbar"><div class="dot" id="dot"></div><span id="syncTxt">Not synced yet</span></div>
 </div>
 
-<!-- Labels Modal -->
-<div class="modal-overlay" id="labelModal">
+<!-- LABELS MODAL -->
+<div class="overlay" id="lblModal">
   <div class="modal">
-    <h2>Manage Labels</h2>
-    <div class="label-list" id="labelList"></div>
-    <div style="display:flex;gap:8px">
-      <input type="text" id="newLabelInput" placeholder="New label…" style="flex:1;padding:7px 12px;font-size:14px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg);color:var(--tp);font-family:var(--sans);outline:none"/>
-      <button onclick="addLabel()" style="padding:7px 14px;font-size:13px;font-weight:600;background:var(--accent);color:#fff;border:none;border-radius:var(--r);cursor:pointer">Add</button>
+    <div class="modal-head">Manage labels</div>
+    <div class="lbl-list" id="lblList"></div>
+    <div class="new-lbl-row">
+      <input type="text" id="newLblTxt" placeholder="New label…"/>
+      <button onclick="addLabel()">Add</button>
     </div>
-    <div class="modal-actions"><button class="primary" onclick="closeLabelModal()">Done</button></div>
+    <div class="modal-foot"><button onclick="closeLblModal()">Done</button></div>
   </div>
 </div>
 
 <script>
-const CONF_KEY  = 'dsc_conf';
-const CACHE_KEY = 'dsc_cache';
-const NF_KEY    = 'dsc_nf';
+const CK='dsc_conf', DK='dsc_data', NK='dsc_nf';
+let conf=null, data=null, filter='', pin='';
 
-let conf = null;
-let data = null;
-let activeFilter = '';
-let pinBuffer = '';
-
-// ── STORAGE ──
-function loadConf(){ try{ return JSON.parse(localStorage.getItem(CONF_KEY)); }catch{ return null; } }
-function saveConf(c){ localStorage.setItem(CONF_KEY, JSON.stringify(c)); }
-function loadCache(){ try{ return JSON.parse(localStorage.getItem(CACHE_KEY)) || {items:[],labels:['Travel','Fitness','Health','Bike']}; }catch{ return {items:[],labels:['Travel','Fitness','Health','Bike']}; } }
-function saveCache(d){ localStorage.setItem(CACHE_KEY, JSON.stringify(d)); }
-function loadNotified(){ try{ return JSON.parse(localStorage.getItem(NF_KEY)) || {}; }catch{ return {}; } }
-function saveNotified(n){ localStorage.setItem(NF_KEY, JSON.stringify(n)); }
-
-// ── UTILS ──
-function simpleHash(s){ let h=0; for(let i=0;i<s.length;i++) h=(Math.imul(31,h)+s.charCodeAt(i))|0; return h.toString(36); }
-function fmtDate(iso){ if(!iso) return ''; return new Date(iso).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'}); }
-
-function daysSince(dateStr){
-  if(!dateStr) return null;
-  // Compare date-only (strip time) to avoid timezone drift
-  const last = new Date(dateStr.split('T')[0]);
-  const today = new Date(new Date().toISOString().split('T')[0]);
-  return Math.round((today - last) / 86400000);
+// ── storage ──
+const lsGet=k=>{try{return JSON.parse(localStorage.getItem(k))}catch{return null}};
+const lsSet=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+// Label palette — cycling colours for new labels
+const LABEL_COLORS=['#D97706','#7C3AED','#2563EB','#DC2626','#059669','#DB2777','#0891B2','#65A30D'];
+const defData=()=>({items:[],labels:[
+  {name:'Travel',color:'#D97706'},
+  {name:'Fitness',color:'#059669'},
+  {name:'Health',color:'#DC2626'},
+  {name:'Bike',color:'#2563EB'},
+]});
+// Normalise labels to objects
+function normLabels(labels){
+  return (labels||[]).map((l,i)=>typeof l==='string'?{name:l,color:LABEL_COLORS[i%LABEL_COLORS.length]}:l);
 }
 
-// ── HISTORY HELPERS ──
-// Canonical form: item.history = sorted array of unique ISO date strings (all entries including lastDate)
-// lastDate = most recent entry = last element of sorted history
-function normaliseItem(item){
-  // Merge lastDate into history, deduplicate, sort
-  let all = [...(item.history || [])];
-  if(item.lastDate) all.push(item.lastDate);
-  // Deduplicate by date part only
-  const seen = new Set();
-  all = all.filter(d => {
-    const key = d.split('T')[0];
-    if(seen.has(key)) return false;
-    seen.add(key); return true;
-  });
-  all.sort((a,b) => new Date(a) - new Date(b));
-  item.history = all;
-  item.lastDate = all.length ? all[all.length-1] : null;
+function hash(s){let h=0;for(let i=0;i<s.length;i++)h=(Math.imul(31,h)+s.charCodeAt(i))|0;return h.toString(36)}
+
+// ── screen ──
+function go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active')}
+
+function boot(){
+  conf=lsGet(CK);
+  go(conf?'loginScreen':'setupScreen');
+  if(!conf) go('setupScreen');
+}
+
+// ── pin ──
+function pk(k){
+  document.getElementById('loginErr').textContent='';
+  if(k==='⌫') pin=pin.slice(0,-1);
+  else if(k==='✓'){checkPin();return}
+  else if(pin.length<4) pin+=k;
+  if(pin.length===4) setTimeout(checkPin,80);
+  dots();
+}
+function dots(){for(let i=0;i<4;i++)document.getElementById('d'+i).classList.toggle('filled',i<pin.length)}
+function checkPin(){
+  if(pin.length<4){document.getElementById('loginErr').textContent='Enter all 4 digits';return}
+  if(hash(pin)!==conf.pinHash){document.getElementById('loginErr').textContent='Wrong PIN. Try again.';pin='';dots();return}
+  pin='';dots();
+  data=lsGet(DK)||defData();
+  data.items=(data.items||[]).map(norm);
+  data.labels=normLabels(data.labels);
+  go('mainScreen');
+  renderAll();checkNotifBar();pullGist();
+}
+function lockApp(){pin='';dots();go('loginScreen')}
+function resetAll(){if(confirm('Delete all local data and settings?')){localStorage.clear();location.reload()}}
+
+// ── setup ──
+function doSetup(){
+  const p=document.getElementById('sPin').value.trim();
+  const p2=document.getElementById('sPin2').value.trim();
+  const g=document.getElementById('sGist').value.trim();
+  const t=document.getElementById('sToken').value.trim();
+  const err=document.getElementById('setupErr');
+  if(!/^\d{4}$/.test(p)){err.textContent='PIN must be exactly 4 digits';return}
+  if(p!==p2){err.textContent='PINs do not match';return}
+  if(!g){err.textContent='Gist ID is required';return}
+  if(!t){err.textContent='Token is required';return}
+  const ex=lsGet(CK);
+  if(ex&&ex.gistId&&ex.gistId!==g&&!confirm('Another account exists here. Replace it?'))return;
+  conf={pinHash:hash(p),gistId:g,token:t};
+  lsSet(CK,conf);
+  data=defData();lsSet(DK,data);
+  go('mainScreen');renderAll();checkNotifBar();pushGist();
+}
+
+// ── normalise item ──
+// Single source of truth: item.history = sorted, deduped ISO strings
+// item.lastDate = last element (derived, kept for compat)
+function norm(item){
+  let all=[...(item.history||[])];
+  if(item.lastDate&&!all.includes(item.lastDate))all.push(item.lastDate);
+  // dedup by date part
+  const seen=new Set();
+  all=all.filter(d=>{const k=d.split('T')[0];if(seen.has(k))return false;seen.add(k);return true});
+  all.sort((a,b)=>new Date(a)-new Date(b));
+  item.history=all;
+  item.lastDate=all.length?all[all.length-1]:null;
   return item;
 }
 
-function avgInterval(history){
-  // history is already sorted; need at least 2 entries
-  if(!history || history.length < 2) return null;
-  const dates = history.map(d => new Date(d.split('T')[0]));
-  let total = 0;
-  for(let i=1; i<dates.length; i++) total += dates[i] - dates[i-1];
-  return Math.round(total / (dates.length-1) / 86400000);
+function addEntry(item,isoOrDate){
+  // isoOrDate can be 'YYYY-MM-DD' or full ISO
+  const dateKey=isoOrDate.split('T')[0];
+  // Remove any existing entry for same date
+  item.history=item.history.filter(h=>h.split('T')[0]!==dateKey);
+  item.history.push(dateKey+'T12:00:00.000Z');
+  return norm(item);
 }
 
-function milestoneHit(days){
-  if(days===null) return null;
-  if(days===30) return '1 month';
-  if(days===69) return '69 days';
-  if(days>=100 && days%100===0) return days+' days';
+function delEntry(item,dateKey){
+  item.history=item.history.filter(h=>h.split('T')[0]!==dateKey);
+  return norm(item);
+}
+
+// ── time ──
+function daysSince(iso){
+  if(!iso)return null;
+  const a=new Date(iso.split('T')[0]),b=new Date(new Date().toISOString().split('T')[0]);
+  return Math.round((b-a)/86400000);
+}
+function avgInterval(history){
+  if(!history||history.length<2)return null;
+  const d=history.map(h=>new Date(h.split('T')[0]));
+  let t=0;for(let i=1;i<d.length;i++)t+=d[i]-d[i-1];
+  return Math.round(t/(d.length-1)/86400000);
+}
+function milestone(days){
+  if(days===null)return null;
+  if(days===30)return'1 month';
+  if(days===69)return'69 days';
+  if(days>=100&&days%100===0)return days+' days';
   return null;
 }
+function fmtDate(iso){return new Date(iso.split('T')[0]).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'})}
+function today(){return new Date().toISOString().split('T')[0]}
 
-// ── SCREENS ──
-function showScreen(id){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
+// ── sync ──
 function setSyncStatus(state,msg){
-  document.getElementById('syncDot').className='sync-dot'+(state?' '+state:'');
-  document.getElementById('syncStatus').textContent=msg;
+  document.getElementById('dot').className='dot'+(state?' '+state:'');
+  document.getElementById('syncTxt').textContent=msg;
 }
-
-// ── BOOT ──
-function boot(){
-  conf = loadConf();
-  // If conf exists → show login; otherwise show setup
-  showScreen(conf ? 'loginScreen' : 'setupScreen');
-}
-
-// ── PIN / LOGIN ──
-function pinKey(k){
-  document.getElementById('loginError').textContent='';
-  if(k==='⌫') pinBuffer=pinBuffer.slice(0,-1);
-  else if(k==='✓'){ submitPin(); return; }
-  else if(pinBuffer.length<4) pinBuffer+=k;
-  if(pinBuffer.length===4) setTimeout(submitPin,80);
-  renderDots();
-}
-function renderDots(){
-  for(let i=0;i<4;i++) document.getElementById('d'+i).classList.toggle('filled',i<pinBuffer.length);
-}
-function submitPin(){
-  if(pinBuffer.length<4){ document.getElementById('loginError').textContent='Enter all 4 digits'; return; }
-  if(simpleHash(pinBuffer)!==conf.pinHash){
-    document.getElementById('loginError').textContent='Wrong PIN. Try again.';
-    pinBuffer=''; renderDots(); return;
-  }
-  pinBuffer=''; renderDots();
-  data = loadCache();
-  // Normalise all items on load to fix any legacy data
-  data.items = (data.items||[]).map(normaliseItem);
-  showScreen('mainScreen');
-  renderAll();
-  checkNotifBar();
-  pullGist();
-}
-function lockApp(){ pinBuffer=''; renderDots(); showScreen('loginScreen'); }
-function resetAll(){
-  if(confirm('This will delete all your local data and settings. You will need your Gist ID and token to set up again. Continue?')){
-    localStorage.clear(); location.reload();
-  }
-}
-
-// ── SETUP ──
-function completeSetup(){
-  const pin    = document.getElementById('setupPin').value.trim();
-  const pin2   = document.getElementById('setupPin2').value.trim();
-  const gistId = document.getElementById('setupGistId').value.trim();
-  const token  = document.getElementById('setupToken').value.trim();
-  const err    = document.getElementById('setupError');
-  if(!/^\d{4}$/.test(pin)){ err.textContent='PIN must be exactly 4 digits'; return; }
-  if(pin!==pin2){ err.textContent='PINs do not match'; return; }
-  if(!gistId){ err.textContent='Gist ID is required'; return; }
-  if(!token){ err.textContent='GitHub token is required'; return; }
-  // Check if a config already exists with a different gistId — warn but allow
-  const existing = loadConf();
-  if(existing && existing.gistId && existing.gistId !== gistId){
-    if(!confirm('A different account is already set up on this browser. Continuing will replace it. Are you sure?')) return;
-  }
-  conf = { pinHash: simpleHash(pin), gistId, token };
-  saveConf(conf);
-  data = { items:[], labels:['Travel','Fitness','Health','Bike'] };
-  saveCache(data);
-  showScreen('mainScreen');
-  renderAll();
-  checkNotifBar();
-  pushGist();
-}
-
-// ── GIST SYNC ──
 async function pullGist(){
   setSyncStatus('busy','Syncing…');
   try{
-    const res = await fetch(`https://api.github.com/gists/${conf.gistId}`,{
-      headers:{ Authorization:`token ${conf.token}`, Accept:'application/vnd.github.v3+json' }
-    });
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    const json = await res.json();
-    const raw  = (json.files['days-since.json']||{}).content || '{}';
-    const remote = JSON.parse(raw);
-    if(remote.items)  data.items  = remote.items.map(normaliseItem);
-    if(remote.labels) data.labels = remote.labels;
-    saveCache(data);
-    setSyncStatus('ok','Synced '+new Date().toLocaleTimeString());
-    renderAll();
-    checkMilestones();
-  } catch(e){
-    setSyncStatus('err','Sync failed — using local data');
-    console.error(e);
-  }
+    const r=await fetch(`https://api.github.com/gists/${conf.gistId}`,{headers:{Authorization:`token ${conf.token}`,Accept:'application/vnd.github.v3+json'}});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const j=await r.json();
+    const raw=(j.files['days-since.json']||{}).content||'{}';
+    const rem=JSON.parse(raw);
+    if(rem.items)data.items=rem.items.map(norm);
+    if(rem.labels)data.labels=normLabels(rem.labels);
+    lsSet(DK,data);setSyncStatus('ok','Synced '+new Date().toLocaleTimeString());
+    renderAll();checkMilestones();
+  }catch(e){setSyncStatus('err','Sync failed — using local data');console.error(e)}
 }
-
 async function pushGist(){
-  setSyncStatus('busy','Saving…');
-  saveCache(data);
+  lsSet(DK,data);setSyncStatus('busy','Saving…');
   try{
-    const res = await fetch(`https://api.github.com/gists/${conf.gistId}`,{
-      method:'PATCH',
-      headers:{ Authorization:`token ${conf.token}`, Accept:'application/vnd.github.v3+json', 'Content-Type':'application/json' },
-      body: JSON.stringify({ files:{ 'days-since.json':{ content: JSON.stringify(data,null,2) } } })
-    });
-    if(!res.ok) throw new Error('HTTP '+res.status);
+    const r=await fetch(`https://api.github.com/gists/${conf.gistId}`,{method:'PATCH',headers:{Authorization:`token ${conf.token}`,Accept:'application/vnd.github.v3+json','Content-Type':'application/json'},body:JSON.stringify({files:{'days-since.json':{content:JSON.stringify(data,null,2)}}})});
+    if(!r.ok)throw new Error('HTTP '+r.status);
     setSyncStatus('ok','Saved '+new Date().toLocaleTimeString());
-  } catch(e){
-    setSyncStatus('err','Save failed — kept locally');
-    console.error(e);
-  }
+  }catch(e){setSyncStatus('err','Save failed — kept locally');console.error(e)}
+}
+async function syncNow(){await pullGist()}
+
+// ── render ──
+function renderAll(){renderChips();renderLabelSel();renderItems()}
+
+function renderChips(){
+  const lbls=data.labels||[];
+  let h=`<button class="chip${filter===''?' on':''}" onclick="setFilter('')">All</button>`;
+  lbls.forEach(l=>{
+    const name=l.name||l;
+    const col=l.color||null;
+    const activeStyle=filter===name&&col?`style="background:${col};border-color:${col};color:#fff"`:'';
+    const hoverData=col?`data-col="${col}"`:'';
+    h+=`<button class="chip${filter===name?' on':''}" ${activeStyle} ${hoverData} onclick="setFilter('${name}')">${name}</button>`;
+  });
+  h+=`<button class="chip mgmt" onclick="openLblModal()">⚙ Labels</button>`;
+  document.getElementById('chips').innerHTML=h;
+}
+function renderLabelSel(){
+  const s=document.getElementById('newLbl');
+  s.innerHTML='<option value="">No label</option>';
+  (data.labels||[]).forEach(l=>{const n=l.name||l;s.innerHTML+=`<option value="${n}">${n}</option>`});
 }
 
-async function syncNow(){ await pullGist(); }
-
-// ── RENDER ──
-function renderAll(){ renderLabelFilter(); renderLabelSelect(); renderCards(); }
-
-function renderLabelFilter(){
-  const labels = data.labels||[];
-  let h = `<button class="label-chip${activeFilter===''?' active':''}" onclick="filterLabel('')">All</button>`;
-  labels.forEach(l=> h+=`<button class="label-chip${activeFilter===l?' active':''}" onclick="filterLabel('${l}')">${l}</button>`);
-  h += `<button class="label-chip manage" onclick="openLabelModal()">⚙ Labels</button>`;
-  document.getElementById('labelsRow').innerHTML=h;
-}
-
-function renderLabelSelect(){
-  const sel=document.getElementById('newLabel');
-  sel.innerHTML='<option value="">No label</option>';
-  (data.labels||[]).forEach(l=> sel.innerHTML+=`<option value="${l}">${l}</option>`);
-}
-
-function renderCards(){
-  const el=document.getElementById('cards');
-  const items=(data.items||[]).filter(it=>!activeFilter||it.label===activeFilter);
-  if(!items.length){
-    el.innerHTML=`<div class="empty">
-      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-        <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
-      </svg>
-      ${activeFilter?`No items labelled "${activeFilter}".`:'Nothing tracked yet.<br>Add something above to get started.'}
-    </div>`;
+function renderItems(){
+  const el=document.getElementById('items');
+  const list=(data.items||[]).filter(it=>!filter||it.label===(filter));
+  if(!list.length){
+    el.innerHTML=`<div class="empty-state"><p>${filter?`Nothing labelled "${filter}" yet.`:'Nothing tracked yet.'}</p><small>Add something above to get started.</small></div>`;
     return;
   }
-  el.innerHTML=items.map(item=>{
+  el.innerHTML=list.map(item=>{
     const i=data.items.indexOf(item);
     const days=daysSince(item.lastDate);
     const avg=avgInterval(item.history);
-    const ms=milestoneHit(days);
-    let bClass,bText,dColor;
-    if(days===null){ bClass='badge-warn'; bText='not logged yet'; dColor='var(--amber)'; }
-    else if(days===0){ bClass='badge-ok'; bText='today'; dColor='var(--accent)'; }
-    else if(days<=7){ bClass='badge-ok'; bText=days+'d ago'; dColor='var(--accent)'; }
-    else if(days<=30){ bClass='badge-warn'; bText=days+'d ago'; dColor='var(--amber)'; }
-    else{ bClass='badge-alert'; bText=days+'d ago'; dColor='var(--red)'; }
+    const ms=milestone(days);
+    const isOpen=item._open||false;
 
-    const todayStr=new Date().toISOString().split('T')[0];
-    const curVal=item.lastDate?item.lastDate.split('T')[0]:todayStr;
+    let countCls='count',verb='It\'s been';
+    if(days===null){countCls='count warn'}
+    else if(days>30){countCls='count alert'}
+    else if(days>7){countCls='count warn'}
 
-    // History display: sorted newest first, excluding lastDate (shown separately as "Last:")
-    const histEntries=[...item.history].reverse();
-    const histHtml=histEntries.length
-      ? histEntries.map((h,hi)=>
-          `<div class="history-item">
-            <span>${fmtDate(h)}${h===item.lastDate?' <em style="color:var(--accent);font-size:10px">(latest)</em>':''}</span>
-            <button onclick="removeHistoryEntry(${i},'${h.split('T')[0]}')" title="Remove this entry">✕</button>
-          </div>`
-        ).join('')
-      : '<div style="font-size:11px;color:var(--th)">No history yet</div>';
+    const countTxt=days===null?'?':days.toString();
+    // label colour — falls back to accent if no label/color
+    const lblObj=(data.labels||[]).find(l=>(l.name||l)===item.label);
+    const lblColor=lblObj&&lblObj.color?lblObj.color:null;
+    const nameStyle=lblColor?`style="color:${lblColor}"`:'' ;
+    const countStyle=lblColor?`style="color:${lblColor};font-size:inherit"`:'' ;
 
-    return `<div class="${ms?'card milestone':'card'}">
-      ${item.label?`<div class="card-label-tag">${item.label}</div>`:''}
-      <div class="card-name" title="${item.name}">${item.name}</div>
-      <div class="card-days" style="color:${dColor}">${days===null?'—':days}</div>
-      <div class="card-sublabel">days since</div>
-      <div class="card-date">${item.lastDate?'Last: '+fmtDate(item.lastDate):'Never logged'}</div>
-      <span class="badge ${bClass}">${bText}</span>
-      ${ms?`<span class="badge" style="background:var(--amber-bg);color:var(--amber)">🏁 ${ms}!</span>`:''}
-      ${avg!==null?`<div class="card-avg">Avg every <span>${avg}d</span> · ${item.history.length} ${item.history.length===1?'entry':'entries'}</div>`:''}
-      <div class="card-actions">
-        <button class="btn-done" onclick="markDone(${i})">✓ Did it today</button>
-        <button class="btn-sm" onclick="toggleEdit(${i})" title="Log a past date">✎</button>
-        <button class="btn-sm" onclick="toggleHistory(${i})" title="View history">📋</button>
-        <button class="btn-sm del" onclick="removeItem(${i})" title="Delete">✕</button>
+    const sentence=days===null
+      ? `<span class="${countCls}" ${countStyle}>?</span> days since <span class="name" ${nameStyle}>${item.name}</span>`
+      : `<span class="${countCls}" ${countStyle}>${countTxt}</span> day${days===1?'':'s'} since <span class="name" ${nameStyle}>${item.name}</span>`;
+
+    const todayStr=today();
+    const lastVal=item.lastDate?item.lastDate.split('T')[0]:todayStr;
+
+    // history entries newest-first
+    const histRows=[...item.history].reverse().map(h=>{
+      const dk=h.split('T')[0];
+      const isLatest=h===item.lastDate;
+      return `<div class="hist-item">
+        <span class="hist-date">${fmtDate(h)}</span>
+        ${isLatest?'<span class="hist-badge">latest</span>':''}
+        <button class="hist-del" onclick="doDelEntry(event,${i},'${dk}')" title="Remove this entry">×</button>
+      </div>`;
+    }).join('');
+
+    return `<div class="item${ms?' milestone':''}" id="item-${i}">
+      <div class="item-head" onclick="toggleItem(${i})">
+        <div class="item-sentence">${sentence}</div>
+        <div class="item-right">
+          ${item.label?`<span class="item-label-chip" ${lblColor?'style="background:'+lblColor+'22;color:'+lblColor+';border-color:'+lblColor+'44"':''}>${item.label}</span>`:''}
+          <span class="item-chevron">▾</span>
+        </div>
       </div>
-      <div class="edit-row" id="edit-${i}">
-        <input type="date" id="datepick-${i}" value="${curVal}" max="${todayStr}"/>
-        <button class="btn-save" onclick="saveDate(${i})">Add entry</button>
-        <button class="btn-cancel-sm" onclick="toggleEdit(${i})">Cancel</button>
-      </div>
-      <div class="history-row" id="hist-${i}">
-        <h4>All entries (newest first)</h4>
-        <div class="history-list">${histHtml}</div>
+      ${(avg!==null||item.lastDate)?`<div class="item-sub">
+        ${item.lastDate?`<span>Last: ${fmtDate(item.lastDate)}</span>`:''}
+        ${avg!==null?`<span class="avg">· avg every ${avg}d</span>`:''}
+        ${item.history.length>0?`<span style="color:var(--th)">· ${item.history.length} ${item.history.length===1?'entry':'entries'}</span>`:''}
+      </div>`:''}
+      <div class="item-drawer">
+        <div class="item-drawer-inner">
+          <div class="item-drawer-content">
+            ${ms?`<div class="ms-banner">🏁 ${ms} milestone!</div>`:''}
+            <div class="drawer-section">
+              <div class="drawer-label">Log an entry</div>
+              <div class="add-entry-row">
+                <input type="date" class="date-input" id="ep-${i}" value="${todayStr}" max="${todayStr}"/>
+                <button class="btn-add-entry" onclick="doAddEntry(event,${i})">Add entry</button>
+              </div>
+            </div>
+            <div class="drawer-section">
+              <div class="drawer-label">History</div>
+              <div class="hist-list">${histRows||'<div class="hist-empty">No entries yet — hit "Add entry" or "Did it today" above.</div>'}</div>
+            </div>
+            <div class="drawer-actions">
+              <button class="btn-ghost" onclick="doToday(event,${i})">✓ Did it today</button>
+              <button class="btn-danger" onclick="doRemoveItem(event,${i})">Delete</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>`;
   }).join('');
+
+  // Re-apply open states
+  list.forEach(item=>{
+    if(item._open){
+      const i=data.items.indexOf(item);
+      document.getElementById('item-'+i)?.classList.add('open');
+    }
+  });
 }
 
-// ── ACTIONS ──
-function filterLabel(l){ activeFilter=l; renderAll(); }
+function toggleItem(i){
+  data.items[i]._open=!data.items[i]._open;
+  const el=document.getElementById('item-'+i);
+  if(el)el.classList.toggle('open',data.items[i]._open);
+}
 
+function setFilter(l){filter=l;renderAll()}
+
+// ── item actions ──
 function addItem(){
-  const inp=document.getElementById('newItem');
-  const label=document.getElementById('newLabel').value;
+  const inp=document.getElementById('newName');
+  const lbl=document.getElementById('newLbl').value;
   const name=inp.value.trim();
-  if(!name) return;
-  const item = normaliseItem({name,label,lastDate:null,history:[]});
-  data.items.push(item);
-  inp.value='';
-  renderAll(); pushGist();
+  if(!name)return;
+  data.items.push(norm({name,label:lbl,lastDate:null,history:[]}));
+  inp.value='';renderAll();pushGist();
 }
 
-function markDone(i){
-  // Add today as a new entry
-  const todayISO = new Date().toISOString();
-  data.items[i].history.push(todayISO);
-  data.items[i] = normaliseItem(data.items[i]);
-  renderAll(); pushGist();
+function doToday(e,i){
+  e.stopPropagation();
+  data.items[i]=addEntry(data.items[i],new Date().toISOString());
+  renderAll();pushGist();
 }
 
-function removeItem(i){
-  if(!confirm(`Remove "${data.items[i].name}"?`)) return;
-  data.items.splice(i,1);
-  renderAll(); pushGist();
+function doAddEntry(e,i){
+  e.stopPropagation();
+  const val=document.getElementById('ep-'+i).value;
+  if(!val)return;
+  data.items[i]._open=true;
+  data.items[i]=addEntry(data.items[i],val);
+  renderAll();pushGist();
 }
 
-function toggleEdit(i){ document.getElementById('edit-'+i).classList.toggle('open'); }
-
-function saveDate(i){
-  const val=document.getElementById('datepick-'+i).value;
-  if(!val) return;
-  // Add chosen date as an entry (not replace — "Add entry" semantics)
-  data.items[i].history.push(new Date(val+'T12:00:00').toISOString());
-  data.items[i] = normaliseItem(data.items[i]);
-  renderAll(); pushGist();
+function doDelEntry(e,i,dateKey){
+  e.stopPropagation();
+  data.items[i]._open=true;
+  data.items[i]=delEntry(data.items[i],dateKey);
+  renderAll();pushGist();
 }
 
-function toggleHistory(i){ document.getElementById('hist-'+i).classList.toggle('open'); }
-
-function removeHistoryEntry(itemIdx, dateKey){
-  // Remove all entries matching this date (date part only)
-  data.items[itemIdx].history = data.items[itemIdx].history.filter(h => h.split('T')[0] !== dateKey);
-  data.items[itemIdx] = normaliseItem(data.items[itemIdx]);
-  renderAll(); pushGist();
+function doRemoveItem(e,i){
+  e.stopPropagation();
+  if(!confirm(`Delete "${data.items[i].name}"?`))return;
+  data.items.splice(i,1);renderAll();pushGist();
 }
 
-// ── LABELS ──
-function openLabelModal(){ renderLabelList(); document.getElementById('labelModal').classList.add('open'); }
-function closeLabelModal(){ document.getElementById('labelModal').classList.remove('open'); renderAll(); pushGist(); }
-function renderLabelList(){
-  document.getElementById('labelList').innerHTML=(data.labels||[]).map((l,i)=>
-    `<div class="label-list-item">
-      <input type="text" value="${l}" onchange="renameLabel(${i},this.value)"/>
-      <button onclick="deleteLabel(${i})">✕</button>
-    </div>`
-  ).join('');
+// ── labels ──
+function openLblModal(){renderLblList();document.getElementById('lblModal').classList.add('on')}
+function closeLblModal(){document.getElementById('lblModal').classList.remove('on');renderAll();pushGist()}
+function renderLblList(){
+  document.getElementById('lblList').innerHTML=(data.labels||[]).map((l,i)=>{
+    const name=l.name||l, col=l.color||LABEL_COLORS[i%LABEL_COLORS.length];
+    const swatches=LABEL_COLORS.map(c=>
+      `<button onclick="setLabelColor(${i},'${c}')" title="${c}" style="width:18px;height:18px;border-radius:50%;background:${c};border:2px solid ${c===col?'var(--tp)':'transparent'};cursor:pointer;flex-shrink:0"></button>`
+    ).join('');
+    return `<div class="lbl-row" style="flex-direction:column;align-items:flex-start;gap:6px">
+      <div style="display:flex;gap:7px;width:100%">
+        <div style="width:12px;height:12px;border-radius:50%;background:${col};flex-shrink:0;margin-top:10px"></div>
+        <input type="text" value="${name}" onchange="renameLabel(${i},this.value)" style="flex:1"/>
+        <button onclick="delLabel(${i})">✕</button>
+      </div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;padding-left:19px">${swatches}</div>
+    </div>`;
+  }).join('');
 }
 function addLabel(){
-  const inp=document.getElementById('newLabelInput');
-  const name=inp.value.trim();
-  if(!name||data.labels.includes(name)) return;
-  data.labels.push(name); inp.value='';
-  saveCache(data); renderLabelList();
+  const inp=document.getElementById('newLblTxt');
+  const n=inp.value.trim();
+  if(!n||(data.labels||[]).find(l=>(l.name||l)===n))return;
+  const col=LABEL_COLORS[data.labels.length%LABEL_COLORS.length];
+  data.labels.push({name:n,color:col});inp.value='';lsSet(DK,data);renderLblList();
 }
-function renameLabel(i,val){
-  const old=data.labels[i]; data.labels[i]=val;
-  data.items.forEach(it=>{ if(it.label===old) it.label=val; });
-  saveCache(data);
+function setLabelColor(i,col){
+  if(typeof data.labels[i]==='string') data.labels[i]={name:data.labels[i],color:col};
+  else data.labels[i].color=col;
+  lsSet(DK,data);renderLblList();
 }
-function deleteLabel(i){
-  const name=data.labels[i];
-  if(!confirm(`Delete label "${name}"? Items with this label will become unlabelled.`)) return;
+function renameLabel(i,v){
+  const old=typeof data.labels[i]==='string'?data.labels[i]:data.labels[i].name;
+  if(typeof data.labels[i]==='string') data.labels[i]={name:v,color:LABEL_COLORS[i%LABEL_COLORS.length]};
+  else data.labels[i].name=v;
+  data.items.forEach(it=>{if(it.label===old)it.label=v});lsSet(DK,data);
+}
+function delLabel(i){
+  const n=typeof data.labels[i]==='string'?data.labels[i]:data.labels[i].name;
+  if(!confirm(`Delete label "${n}"?`))return;
   data.labels.splice(i,1);
-  data.items.forEach(it=>{ if(it.label===name) it.label=''; });
-  saveCache(data); renderLabelList();
+  data.items.forEach(it=>{if(it.label===n)it.label=''});
+  lsSet(DK,data);renderLblList();
 }
 
-// ── NOTIFICATIONS ──
+// ── notifications ──
 function checkNotifBar(){
   if(typeof Notification!=='undefined'&&Notification.permission==='default')
-    document.getElementById('notifBar').classList.remove('hidden');
+    document.getElementById('notifStrip').classList.remove('off');
 }
-function requestNotifPermission(){
+function askNotif(){
   Notification.requestPermission().then(p=>{
-    if(p==='granted'){ document.getElementById('notifBar').classList.add('hidden'); checkMilestones(); }
+    if(p==='granted'){document.getElementById('notifStrip').classList.add('off');checkMilestones()}
   });
 }
 function checkMilestones(){
-  if(typeof Notification==='undefined'||Notification.permission!=='granted') return;
-  const notified=loadNotified(); let changed=false;
+  if(typeof Notification==='undefined'||Notification.permission!=='granted')return;
+  const nf=lsGet(NK)||{};let ch=false;
   (data.items||[]).forEach(item=>{
-    const days=daysSince(item.lastDate);
-    const ms=milestoneHit(days);
-    if(!ms) return;
-    const nkey=item.name+':'+days;
-    if(!notified[nkey]){
-      new Notification('Days Since — '+item.name,{ body:`It's been ${ms} since you last did "${item.name}".` });
-      notified[nkey]=true; changed=true;
-    }
+    const d=daysSince(item.lastDate),ms=milestone(d);
+    if(!ms)return;
+    const k=item.name+':'+d;
+    if(!nf[k]){new Notification('Days Since',{body:`It's been ${ms} since "${item.name}".`});nf[k]=true;ch=true;}
   });
-  if(changed) saveNotified(notified);
+  if(ch)lsSet(NK,nf);
 }
 
-// ── KEYBOARD ──
+// ── keyboard ──
 document.addEventListener('keydown',e=>{
   if(document.getElementById('loginScreen').classList.contains('active')){
-    if(e.key>='0'&&e.key<='9') pinKey(e.key);
-    else if(e.key==='Backspace') pinKey('⌫');
-    else if(e.key==='Enter') pinKey('✓');
+    if(e.key>='0'&&e.key<='9')pk(e.key);
+    else if(e.key==='Backspace')pk('⌫');
+    else if(e.key==='Enter')pk('✓');
   }
 });
-document.getElementById('newItem').addEventListener('keydown',e=>{ if(e.key==='Enter') addItem(); });
+document.getElementById('newName').addEventListener('keydown',e=>{if(e.key==='Enter')addItem()});
 
 boot();
 </script>
