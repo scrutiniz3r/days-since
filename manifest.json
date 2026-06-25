@@ -2,7 +2,7 @@
   "name": "Days Since",
   "short_name": "Days Since",
   "description": "Track how long it's been since you last did something.",
-  "start_url": "/",
+  "start_url": "/days-since/",
   "display": "standalone",
   "background_color": "#FBF7F0",
   "theme_color": "#FBF7F0",
