@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
   --bg:#FBF7F0;
   --surface:#FFFFFF;
@@ -65,8 +65,9 @@ body{font-family:var(--sans);background:var(--bg);color:var(--tp);min-height:100
 .pin-fields input{flex:1;padding:11px 14px;font-size:14px;border:1.5px solid var(--border);border-radius:12px;background:var(--bg);color:var(--tp);outline:none;font-family:var(--sans);transition:border-color .15s}
 .pin-fields input:focus{border-color:var(--amber)}
 .err{font-size:13px;color:var(--rose);min-height:18px;margin-bottom:8px}
-.btn-cta{width:100%;padding:14px;font-size:15px;font-weight:600;background:var(--tp);color:var(--bg);border:none;border-radius:14px;cursor:pointer;transition:opacity .15s;font-family:var(--sans)}
-.btn-cta:hover{opacity:.85}
+.btn-cta{width:100%;padding:14px;font-size:15px;font-weight:600;background:var(--tp);color:var(--bg);border:none;border-radius:14px;cursor:pointer;font-family:var(--sans)}
+.btn-cta:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(44,32,22,.2)}
+.btn-cta:active{transform:scale(.98)}
 .setup-foot{font-size:13px;color:var(--ts);margin-top:16px;text-align:center}
 .setup-foot a{color:var(--amber);cursor:pointer;font-weight:500;text-decoration:none}
 .setup-foot a:hover{text-decoration:underline}
@@ -81,7 +82,9 @@ body{font-family:var(--sans);background:var(--bg);color:var(--tp);min-height:100
 .pin-dot{width:13px;height:13px;border-radius:50%;border:2px solid var(--border);background:transparent;transition:all .2s var(--ease)}
 .pin-dot.filled{background:var(--amber);border-color:var(--amber);transform:scale(1.1)}
 .pin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1rem}
-.pin-key{padding:18px;font-size:18px;font-weight:500;border:1.5px solid var(--border);border-radius:14px;background:var(--surface);color:var(--tp);cursor:pointer;transition:all .12s;user-select:none;font-family:var(--sans);box-shadow:var(--shadow)}
+.pin-key{padding:18px;font-size:18px;font-weight:500;border:1.5px solid var(--border);border-radius:14px;background:var(--surface);color:var(--tp);cursor:pointer;user-select:none;font-family:var(--sans);box-shadow:var(--shadow)}
+.pin-key:hover{background:var(--surface2);border-color:var(--amber);transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+.pin-key:active{transform:scale(.95);box-shadow:none}
 .pin-key:hover{background:var(--surface2);border-color:var(--amber)}
 .pin-key:active{transform:scale(.95)}
 .pin-err{font-size:13px;color:var(--rose);min-height:18px;margin-top:2px}
@@ -97,15 +100,22 @@ body{font-family:var(--sans);background:var(--bg);color:var(--tp);min-height:100
 .greet-text{font-family:var(--serif);font-size:24px;font-weight:300;line-height:1.4;color:var(--tp);margin-bottom:1.25rem}
 .greet-text em{font-style:italic;color:var(--amber)}
 .greet-sub{font-size:14px;color:var(--ts);line-height:1.75;font-style:italic;border-left:3px solid var(--amber);padding-left:1rem}
-.greet-continue{padding:13px 32px;font-size:15px;font-weight:600;background:var(--tp);color:var(--bg);border:none;border-radius:var(--pill);cursor:pointer;transition:all .15s;font-family:var(--sans)}
-.greet-continue:hover{opacity:.85;transform:translateY(-1px)}
+.greet-continue{padding:13px 32px;font-size:15px;font-weight:600;background:var(--tp);color:var(--bg);border:none;border-radius:var(--pill);cursor:pointer;font-family:var(--sans)}
+.greet-continue:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(44,32,22,.2)}
+.greet-continue:active{transform:scale(.96)}
 
 /* ─── TOPBAR ─── */
 .topbar{display:flex;align-items:center;gap:8px;padding:.75rem 1.25rem;background:var(--surface);border-bottom:1px solid var(--border2);position:sticky;top:0;z-index:10}
-.topbar-title{font-family:var(--serif);font-size:20px;font-weight:300;flex:1;color:var(--tp)}
+.topbar-title{font-family:var(--serif);font-size:30px;font-weight:300;flex:1;color:var(--tp);line-height:1}
 .topbar-title em{font-style:italic;color:var(--amber)}
-.tb-btn{height:34px;border-radius:var(--pill);border:1.5px solid var(--border);background:transparent;color:var(--ts);cursor:pointer;transition:all .15s;font-family:var(--sans);font-size:13px;font-weight:500;display:flex;align-items:center;gap:5px;padding:0 12px;white-space:nowrap}
-.tb-btn:hover{border-color:var(--amber);color:var(--amber)}
+.tb-btn{height:38px;border-radius:var(--pill);border:1.5px solid var(--border);background:transparent;color:var(--ts);cursor:pointer;transition:all .15s;font-family:var(--sans);font-size:18px;font-weight:500;display:flex;align-items:center;gap:5px;padding:0 14px;white-space:nowrap}
+.tb-btn:hover{border-color:var(--amber);color:var(--amber);transform:translateY(-1px);box-shadow:var(--shadow)}
+.tb-btn:active{transform:scale(.95)}
+
+/* ── GLOBAL BUTTON LIFT ── */
+button{transition:transform .15s,box-shadow .15s,opacity .15s,background .15s,color .15s,border-color .15s}
+.btn-lift:hover,.btn-lift:focus-visible{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+.btn-lift:active{transform:scale(.95);box-shadow:none}
 
 /* ─── MAIN ─── */
 .main{flex:1;max-width:860px;margin:0 auto;width:100%;padding:1rem 1.25rem}
@@ -115,8 +125,8 @@ body{font-family:var(--sans);background:var(--bg);color:var(--tp);min-height:100
 .notif-strip.off{display:none}
 
 /* ── FAB ── */
-.fab{position:fixed;bottom:1.5rem;right:1.5rem;width:56px;height:56px;border-radius:50%;background:var(--tp);color:var(--bg);border:none;font-size:28px;font-weight:300;cursor:pointer;box-shadow:0 4px 20px rgba(44,32,22,.25);display:flex;align-items:center;justify-content:center;z-index:30;transition:transform .15s,opacity .15s;line-height:1}
-.fab:hover{transform:scale(1.08)}
+.fab{position:fixed;bottom:1.75rem;right:1.75rem;width:68px;height:68px;border-radius:50%;background:var(--tp);color:var(--bg);border:none;font-size:36px;font-weight:300;cursor:pointer;box-shadow:0 6px 24px rgba(44,32,22,.3);display:flex;align-items:center;justify-content:center;z-index:30;line-height:1}
+.fab:hover{transform:translateY(-3px);box-shadow:0 10px 32px rgba(44,32,22,.4)}
 .fab:active{transform:scale(.93)}
 
 /* ── ADD MODAL ── */
@@ -133,8 +143,11 @@ body{font-family:var(--sans);background:var(--bg);color:var(--tp);min-height:100
 .add-lbl-chip.picked{background:var(--tp);color:var(--bg);border-color:var(--tp)}
 .add-modal-actions{display:flex;gap:8px;justify-content:flex-end}
 .add-modal-cancel{padding:10px 16px;font-size:14px;font-weight:500;border:1.5px solid var(--border);border-radius:12px;background:transparent;color:var(--ts);cursor:pointer;font-family:var(--sans)}
-.add-modal-submit{padding:10px 20px;font-size:14px;font-weight:600;background:var(--tp);color:var(--bg);border:none;border-radius:12px;cursor:pointer;font-family:var(--sans);transition:opacity .15s}
-.add-modal-submit:hover{opacity:.85}
+.add-modal-cancel:hover{border-color:var(--ts);color:var(--tp);transform:translateY(-1px);box-shadow:var(--shadow)}
+.add-modal-cancel:active{transform:scale(.96)}
+.add-modal-submit{padding:10px 20px;font-size:14px;font-weight:600;background:var(--tp);color:var(--bg);border:none;border-radius:12px;cursor:pointer;font-family:var(--sans)}
+.add-modal-submit:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(44,32,22,.2)}
+.add-modal-submit:active{transform:scale(.96)}
 
 /* FILTER CHIPS */
 .chips{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:1rem}
@@ -180,7 +193,8 @@ body{font-family:var(--sans);background:var(--bg);color:var(--tp);min-height:100
 .date-in{flex:1;padding:9px 12px;font-size:13px;border:1.5px solid var(--border);border-radius:12px;background:var(--bg);color:var(--tp);outline:none;font-family:var(--sans);transition:border-color .15s}
 .date-in:focus{border-color:var(--amber)}
 .btn-add{padding:9px 14px;font-size:13px;font-weight:600;background:var(--amber);color:#fff;border:none;border-radius:12px;cursor:pointer;white-space:nowrap}
-.btn-add:hover{opacity:.88}
+.btn-add:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(196,120,58,.35)}
+.btn-add:active{transform:scale(.96)}
 
 /* history */
 .hist-list{display:flex;flex-direction:column;gap:2px;max-height:160px;overflow-y:auto}
@@ -194,10 +208,12 @@ body{font-family:var(--sans);background:var(--bg);color:var(--tp);min-height:100
 
 /* sheet actions */
 .sheet-actions{display:flex;gap:8px;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border2)}
-.btn-today{flex:1;padding:10px 18px;font-size:13px;font-weight:600;background:var(--sage-bg);color:var(--sage);border:none;border-radius:12px;cursor:pointer;transition:opacity .15s;text-align:center}
-.btn-today:hover{opacity:.8}
-.btn-del{padding:10px 14px;font-size:13px;font-weight:500;border:none;border-radius:12px;background:transparent;color:var(--th);cursor:pointer;transition:all .15s}
-.btn-del:hover{background:var(--rose-bg);color:var(--rose)}
+.btn-today{flex:1;padding:10px 18px;font-size:13px;font-weight:600;background:var(--sage-bg);color:var(--sage);border:none;border-radius:12px;cursor:pointer;text-align:center}
+.btn-today:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(90,138,86,.25)}
+.btn-today:active{transform:scale(.96)}
+.btn-del{padding:10px 16px;font-size:13px;font-weight:600;border:none;border-radius:12px;background:var(--rose-bg);color:var(--rose);cursor:pointer;box-shadow:0 2px 8px rgba(200,88,74,.25)}
+.btn-del:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(200,88,74,.4)}
+.btn-del:active{transform:scale(.96)}
 
 /* empty */
 .empty-state{grid-column:1/-1;text-align:center;padding:3rem 1rem}
@@ -355,7 +371,6 @@ body{font-family:var(--sans);background:var(--bg);color:var(--tp);min-height:100
 <div id="mainScreen" class="screen">
   <div class="topbar">
     <span class="topbar-title">Days <em>since</em></span>
-    <button class="tb-btn" onclick="syncNow()">↻ Sync</button>
     <button class="tb-btn" onclick="openSettings()">⚙</button>
   </div>
   <div class="main">
@@ -932,9 +947,11 @@ function sheetDelEntry(dk){
   data.items[sheetIdx]=delEntry(data.items[sheetIdx],dk);
   renderAll();renderSheet();pushGist();
 }
-function sheetDelete(){
+async function sheetDelete(){
   if(sheetIdx===null)return;
-  if(!confirm(`Delete "${data.items[sheetIdx].name}"?`))return;
+  const name=data.items[sheetIdx].name;
+  const ok=await showConfirm('Delete item',`Remove "${name}" and all its history? This cannot be undone.`);
+  if(!ok)return;
   data.items.splice(sheetIdx,1);
   closeSheet();renderAll();pushGist();
 }
@@ -1032,9 +1049,10 @@ function renameLabel(i,v){
   else data.labels[i].name=v;
   data.items.forEach(it=>{if(it.label===old)it.label=v});lsSet(DK,data);
 }
-function delLabel(i){
+async function delLabel(i){
   const n=typeof data.labels[i]==='string'?data.labels[i]:data.labels[i].name;
-  if(!confirm(`Delete label "${n}"?`))return;
+  const ok=await showConfirm('Delete label',`Delete "${n}"? Items with this label will become unlabelled.`);
+  if(!ok)return;
   data.labels.splice(i,1);
   data.items.forEach(it=>{if(it.label===n)it.label=''});
   lsSet(DK,data);renderLblList();
@@ -1070,7 +1088,50 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Escape') closeAddModal();
 });
 
+// ── HAPTICS ──
+// Uses Vibration API (Android Chrome) — iOS ignores vibrate but we try anyway
+function haptic(type='light'){
+  if(!navigator.vibrate) return;
+  const patterns={light:10, medium:20, heavy:40, success:[10,30,10], error:[20,40,20]};
+  navigator.vibrate(patterns[type]||patterns.light);
+}
+// Wire haptic to every button tap globally
+document.addEventListener('pointerdown', e=>{
+  const btn=e.target.closest('button');
+  if(!btn) return;
+  // heavier haptic for destructive actions
+  if(btn.classList.contains('btn-del')||btn.id==='confirmDelete') haptic('heavy');
+  else if(btn.classList.contains('btn-today')||btn.classList.contains('btn-cta')||btn.classList.contains('add-modal-submit')||btn.classList.contains('greet-continue')) haptic('medium');
+  else haptic('light');
+}, {passive:true});
+
 boot();
 </script>
-</body>
-</html>
+<!-- ── CONFIRM MODAL ── -->
+<div class="add-overlay" id="confirmOverlay">
+  <div class="add-modal" style="max-width:340px">
+    <div class="add-modal-title" id="confirmTitle">Are you sure?</div>
+    <p id="confirmMsg" style="font-size:14px;color:var(--ts);margin-bottom:1.5rem;line-height:1.6"></p>
+    <div class="add-modal-actions">
+      <button class="add-modal-cancel" onclick="resolveConfirm(false)">Cancel</button>
+      <button class="btn-del" onclick="resolveConfirm(true)">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// patch into existing script — custom confirm
+let _confirmResolve=null;
+function showConfirm(title,msg){
+  return new Promise(res=>{
+    _confirmResolve=res;
+    document.getElementById('confirmTitle').textContent=title;
+    document.getElementById('confirmMsg').textContent=msg;
+    document.getElementById('confirmOverlay').classList.add('on');
+  });
+}
+function resolveConfirm(val){
+  document.getElementById('confirmOverlay').classList.remove('on');
+  if(_confirmResolve){_confirmResolve(val);_confirmResolve=null;}
+}
+</script>
