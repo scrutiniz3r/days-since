@@ -101,64 +101,69 @@ body{font-family:var(--sans);background:var(--bg);color:var(--tp);min-height:100
 .greet-continue:hover{opacity:.85;transform:translateY(-1px)}
 
 /* ─── TOPBAR ─── */
-.topbar{display:flex;align-items:center;gap:8px;padding:.9rem 1.25rem;background:var(--surface);border-bottom:1px solid var(--border2);position:sticky;top:0;z-index:10}
+.topbar{display:flex;align-items:center;gap:8px;padding:.75rem 1.25rem;background:var(--surface);border-bottom:1px solid var(--border2);position:sticky;top:0;z-index:10}
 .topbar-title{font-family:var(--serif);font-size:20px;font-weight:300;flex:1;color:var(--tp)}
 .topbar-title em{font-style:italic;color:var(--amber)}
-.tb-btn{height:36px;border-radius:var(--pill);border:1.5px solid var(--border);background:transparent;color:var(--ts);cursor:pointer;transition:all .15s;font-family:var(--sans);font-size:13px;font-weight:500;display:flex;align-items:center;gap:5px;padding:0 12px;white-space:nowrap}
+.tb-btn{height:34px;border-radius:var(--pill);border:1.5px solid var(--border);background:transparent;color:var(--ts);cursor:pointer;transition:all .15s;font-family:var(--sans);font-size:13px;font-weight:500;display:flex;align-items:center;gap:5px;padding:0 12px;white-space:nowrap}
 .tb-btn:hover{border-color:var(--amber);color:var(--amber)}
-.tb-btn.install-btn{background:var(--amber);color:#fff;border-color:var(--amber)}
-.tb-btn.install-btn:hover{opacity:.88}
-.tb-btn.install-btn.hidden{display:none}
 
 /* ─── MAIN ─── */
-.main{flex:1;max-width:640px;margin:0 auto;width:100%;padding:1.25rem}
+.main{flex:1;max-width:860px;margin:0 auto;width:100%;padding:1rem 1.25rem}
 
 .notif-strip{display:flex;align-items:center;gap:10px;background:var(--amber-bg);color:var(--amber);border-radius:14px;padding:11px 14px;font-size:13px;margin-bottom:1.25rem;cursor:pointer;border:1.5px solid #EDCFA8}
 .notif-strip:hover{opacity:.85}
 .notif-strip.off{display:none}
 
 /* ADD BAR */
-.add-bar{display:flex;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap}
-.add-input{flex:1;min-width:150px;padding:12px 16px;font-size:14px;border:1.5px solid var(--border);border-radius:14px;background:var(--surface);color:var(--tp);outline:none;font-family:var(--sans);transition:border-color .15s;box-shadow:var(--shadow)}
+.add-bar{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
+.add-input{flex:1;min-width:200px;padding:10px 14px;font-size:14px;border:1.5px solid var(--border);border-radius:12px;background:var(--surface);color:var(--tp);outline:none;font-family:var(--sans);transition:border-color .15s;box-shadow:var(--shadow)}
 .add-input:focus{border-color:var(--amber)}
 .add-input::placeholder{color:var(--th)}
-.lbl-sel{padding:12px 12px;font-size:13px;border:1.5px solid var(--border);border-radius:14px;background:var(--surface);color:var(--tp);outline:none;font-family:var(--sans);cursor:pointer;box-shadow:var(--shadow)}
-.add-btn{padding:12px 20px;font-size:14px;font-weight:600;background:var(--tp);color:var(--bg);border:none;border-radius:14px;cursor:pointer;transition:opacity .15s;font-family:var(--sans)}
+.add-bar-row2{display:flex;gap:8px;width:100%}
+.lbl-sel{flex:1;padding:10px 12px;font-size:13px;border:1.5px solid var(--border);border-radius:12px;background:var(--surface);color:var(--tp);outline:none;font-family:var(--sans);cursor:pointer;box-shadow:var(--shadow)}
+.add-btn{padding:10px 20px;font-size:14px;font-weight:600;background:var(--tp);color:var(--bg);border:none;border-radius:12px;cursor:pointer;transition:opacity .15s;font-family:var(--sans);white-space:nowrap}
 .add-btn:hover{opacity:.82}
 
 /* FILTER CHIPS */
-.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.25rem}
-.chip{padding:6px 14px;font-size:12px;font-weight:500;border:1.5px solid var(--border);border-radius:var(--pill);background:var(--surface);color:var(--ts);cursor:pointer;transition:all .15s;white-space:nowrap}
+.chips{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:1rem}
+.chip{padding:5px 12px;font-size:12px;font-weight:500;border:1.5px solid var(--border);border-radius:var(--pill);background:var(--surface);color:var(--ts);cursor:pointer;transition:all .15s;white-space:nowrap}
 .chip:hover{border-color:var(--amber);color:var(--amber)}
 .chip.on{background:var(--tp);color:var(--bg);border-color:var(--tp)}
 .chip.mgmt{color:var(--th);border-style:dashed;background:transparent}
 .chip.mgmt:hover{color:var(--ts)}
 
-/* ITEMS */
-.items{display:flex;flex-direction:column;gap:8px}
+/* ── TILE GRID ── */
+.items{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:10px}
 
-.item{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);border:1.5px solid transparent;overflow:hidden;transition:border-color .2s,box-shadow .2s}
-.item:hover{box-shadow:var(--shadow-lg);border-color:var(--border)}
-.item.open{border-color:var(--amber)}
-.item.milestone{border-color:var(--sage)}
+.tile{background:var(--surface);border-radius:16px;box-shadow:var(--shadow);border:1.5px solid transparent;padding:1rem 1rem .85rem;cursor:pointer;user-select:none;transition:border-color .2s,box-shadow .2s,transform .15s;display:flex;flex-direction:column;gap:4px;min-height:110px;position:relative;overflow:hidden}
+.tile:hover{box-shadow:var(--shadow-lg);border-color:var(--border);transform:translateY(-1px)}
+.tile:active{transform:scale(.97)}
+.tile.milestone{border-color:var(--sage)}
 
-.item-head{display:flex;align-items:center;gap:12px;padding:1.1rem 1.25rem;cursor:pointer;user-select:none}
-.item-sentence{flex:1;font-family:var(--serif);font-size:20px;font-weight:300;line-height:1.35;color:var(--tp)}
-.item-sentence .count{font-size:28px;font-weight:600;line-height:1;vertical-align:middle;margin-right:1px}
-.item-sentence .name{font-weight:600}
-.item-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
-.lbl-chip{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:3px 10px;border-radius:var(--pill)}
-.chevron{font-size:11px;color:var(--th);transition:transform .25s var(--ease);flex-shrink:0}
-.item.open .chevron{transform:rotate(180deg)}
-.item-meta{font-size:12px;color:var(--th);padding:0 1.25rem .85rem;margin-top:-6px;display:flex;flex-wrap:wrap;gap:10px}
+.tile-stripe{position:absolute;top:0;left:0;right:0;height:3px;border-radius:16px 16px 0 0}
+.tile-count{font-family:var(--serif);font-size:38px;font-weight:600;line-height:1;margin-top:4px}
+.tile-unit{font-size:11px;color:var(--th);font-weight:400;letter-spacing:.03em;margin-top:1px}
+.tile-name{font-size:18px;font-weight:600;font-family:var(--serif);font-style:italic;color:var(--amber);margin-top:auto;padding-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile-meta{font-size:10px;color:var(--th);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile-ms{position:absolute;top:10px;right:10px;font-size:14px}
 
-/* DRAWER */
-.drawer{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s var(--ease)}
-.item.open .drawer{grid-template-rows:1fr}
-.drawer-inner{overflow:hidden}
-.drawer-body{padding:0 1.25rem 1.25rem;border-top:1px solid var(--border2)}
-.drawer-sec{margin-top:1rem}
-.drawer-lbl{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--th);margin-bottom:.55rem}
+/* ── BOTTOM SHEET ── */
+.sheet-overlay{display:none;position:fixed;inset:0;background:rgba(44,32,22,.4);z-index:60;backdrop-filter:blur(2px)}
+.sheet-overlay.on{display:flex;align-items:flex-end;justify-content:center}
+@media(min-width:540px){.sheet-overlay.on{align-items:center}}
+.sheet{background:var(--surface);border-radius:24px 24px 0 0;padding:1.25rem 1.25rem 2rem;width:100%;max-width:480px;box-shadow:var(--shadow-lg);max-height:88vh;overflow-y:auto}
+@media(min-width:540px){.sheet{border-radius:24px;margin:1rem}}
+.sheet-handle{width:36px;height:4px;background:var(--border);border-radius:var(--pill);margin:0 auto 1.25rem}
+.sheet-head{display:flex;align-items:flex-start;gap:10px;margin-bottom:1.25rem}
+.sheet-count{font-family:var(--serif);font-size:52px;font-weight:600;line-height:1}
+.sheet-info{flex:1;padding-top:6px}
+.sheet-name{font-size:20px;font-weight:600;color:var(--tp);line-height:1.2}
+.sheet-sub{font-size:13px;color:var(--ts);margin-top:4px;line-height:1.5}
+.sheet-lbl{display:inline-block;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:3px 10px;border-radius:var(--pill);margin-top:6px}
+.sheet-close{width:32px;height:32px;border-radius:50%;border:none;background:var(--surface2);color:var(--ts);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sheet-ms{display:flex;align-items:center;gap:8px;background:var(--sage-bg);color:var(--sage);border-radius:10px;padding:8px 12px;font-size:13px;font-weight:500;margin-bottom:1rem}
+.sheet-sec{margin-bottom:1.1rem}
+.sheet-lbl-sm{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--th);margin-bottom:.55rem}
 
 /* log entry */
 .entry-row{display:flex;gap:7px}
@@ -177,19 +182,16 @@ body{font-family:var(--sans);background:var(--bg);color:var(--tp);min-height:100
 .hist-x:hover{background:var(--rose-bg);color:var(--rose)}
 .hist-empty{font-size:13px;color:var(--th);padding:6px 10px}
 
-/* drawer actions */
-.drawer-actions{display:flex;gap:8px;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border2);flex-wrap:wrap}
-.btn-today{padding:9px 16px;font-size:13px;font-weight:600;background:var(--sage-bg);color:var(--sage);border:none;border-radius:12px;cursor:pointer;transition:opacity .15s}
+/* sheet actions */
+.sheet-actions{display:flex;gap:8px;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border2);flex-wrap:wrap}
+.btn-today{padding:10px 18px;font-size:13px;font-weight:600;background:var(--sage-bg);color:var(--sage);border:none;border-radius:12px;cursor:pointer;transition:opacity .15s}
 .btn-today:hover{opacity:.8}
-.btn-del{padding:9px 14px;font-size:13px;font-weight:500;border:none;border-radius:12px;background:transparent;color:var(--th);cursor:pointer;transition:all .15s;margin-left:auto}
+.btn-del{padding:10px 14px;font-size:13px;font-weight:500;border:none;border-radius:12px;background:transparent;color:var(--th);cursor:pointer;transition:all .15s;margin-left:auto}
 .btn-del:hover{background:var(--rose-bg);color:var(--rose)}
 
-/* milestone */
-.ms-strip{display:flex;align-items:center;gap:8px;background:var(--sage-bg);color:var(--sage);border-radius:10px;padding:8px 12px;font-size:13px;font-weight:500;margin-top:1rem}
-
 /* empty */
-.empty-state{text-align:center;padding:4rem 1rem}
-.empty-state .big{font-family:var(--serif);font-size:26px;font-weight:300;color:var(--ts);margin-bottom:.5rem}
+.empty-state{grid-column:1/-1;text-align:center;padding:3rem 1rem}
+.empty-state .big{font-family:var(--serif);font-size:24px;font-weight:300;color:var(--ts);margin-bottom:.5rem}
 .empty-state .big em{font-style:italic;color:var(--amber)}
 .empty-state small{font-size:13px;color:var(--th)}
 
@@ -247,9 +249,15 @@ body{font-family:var(--sans);background:var(--bg);color:var(--tp);min-height:100
 .dot.busy{background:var(--amber);animation:blink 1s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
 
-@media(max-width:480px){
-  .item-sentence{font-size:17px}
-  .item-sentence .count{font-size:23px}
+@media(max-width:400px){
+  .items{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}
+  .tile-count{font-size:32px}
+  .main{padding:.75rem}
+}
+@media(min-width:600px){
+  .add-bar{flex-wrap:nowrap}
+  .add-bar-row2{width:auto}
+  .add-input{min-width:0}
 }
 @media(prefers-reduced-motion:reduce){
   *{transition:none!important;animation:none!important}
@@ -342,8 +350,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--tp);min-height:100
 <div id="mainScreen" class="screen">
   <div class="topbar">
     <span class="topbar-title">Days <em>since</em></span>
-    <button class="tb-btn install-btn" id="installBtn" onclick="doInstall()">⊕ Install</button>
-    <button class="tb-btn" onclick="syncNow()">↻</button>
+    <button class="tb-btn" onclick="syncNow()">↻ Sync</button>
     <button class="tb-btn" onclick="openSettings()">⚙</button>
   </div>
   <div class="main">
@@ -352,8 +359,10 @@ body{font-family:var(--sans);background:var(--bg);color:var(--tp);min-height:100
     </div>
     <div class="add-bar">
       <input class="add-input" id="newName" placeholder="What do you want to track?"/>
-      <select class="lbl-sel" id="newLbl"><option value="">No label</option></select>
-      <button class="add-btn" onclick="addItem()">+ Add</button>
+      <div class="add-bar-row2">
+        <select class="lbl-sel" id="newLbl"><option value="">No label</option></select>
+        <button class="add-btn" onclick="addItem()">+ Add</button>
+      </div>
     </div>
     <div class="chips" id="chips"></div>
     <div class="items" id="items"></div>
@@ -396,6 +405,14 @@ body{font-family:var(--sans);background:var(--bg);color:var(--tp);min-height:100
 
     <div class="setting-row">
       <div class="setting-info">
+        <strong>Install app</strong>
+        <small>Add to home screen for quick access</small>
+      </div>
+      <button class="tb-btn" id="installBtn" onclick="doInstall()">⊕ Install</button>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-info">
         <strong>Sync data</strong>
         <small>Pull latest from GitHub Gist</small>
       </div>
@@ -412,7 +429,58 @@ body{font-family:var(--sans);background:var(--bg);color:var(--tp);min-height:100
   </div>
 </div>
 
-<!-- ── LABELS MODAL ── -->
+<!-- ── DETAIL SHEET ── -->
+<div class="sheet-overlay" id="sheetOverlay" onclick="closeSheetOnBg(event)">
+  <div class="sheet" id="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <div>
+        <div class="sheet-count" id="sheetCount">—</div>
+        <div style="font-size:11px;color:var(--th);margin-top:2px" id="sheetUnit">days since</div>
+      </div>
+      <div class="sheet-info">
+        <div style="display:flex;align-items:center;gap:6px">
+          <div class="sheet-name" id="sheetName"></div>
+          <button onclick="toggleRename()" style="font-size:11px;color:var(--th);background:none;border:none;cursor:pointer;padding:2px 4px;border-radius:6px" title="Rename">✎</button>
+        </div>
+        <div id="sheetRenameRow" style="display:none;margin-top:6px;gap:6px;flex-wrap:wrap">
+          <input type="text" id="sheetRenameInput" style="flex:1;min-width:120px;padding:7px 10px;font-size:14px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);color:var(--tp);font-family:var(--sans);outline:none"/>
+          <button onclick="saveRename()" style="padding:7px 12px;font-size:13px;font-weight:600;background:var(--amber);color:#fff;border:none;border-radius:10px;cursor:pointer">Save</button>
+          <button onclick="toggleRename()" style="padding:7px 10px;font-size:13px;background:transparent;color:var(--th);border:1.5px solid var(--border);border-radius:10px;cursor:pointer">Cancel</button>
+        </div>
+        <div class="sheet-sub" id="sheetSub"></div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
+          <div id="sheetLbl"></div>
+          <button onclick="toggleLabelEdit()" style="font-size:11px;color:var(--th);background:none;border:none;cursor:pointer;padding:2px 4px;border-radius:6px" title="Change label">✎</button>
+        </div>
+        <div id="sheetLblRow" style="display:none;margin-top:6px;gap:6px;flex-wrap:wrap">
+          <select id="sheetLblSel" style="flex:1;padding:7px 10px;font-size:13px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);color:var(--tp);font-family:var(--sans);outline:none"></select>
+          <button onclick="saveLabelEdit()" style="padding:7px 12px;font-size:13px;font-weight:600;background:var(--amber);color:#fff;border:none;border-radius:10px;cursor:pointer">Save</button>
+          <button onclick="toggleLabelEdit()" style="padding:7px 10px;font-size:13px;background:transparent;color:var(--th);border:1.5px solid var(--border);border-radius:10px;cursor:pointer">Cancel</button>
+        </div>
+      </div>
+      <button class="sheet-close" onclick="closeSheet()">×</button>
+    </div>
+    <div id="sheetMs"></div>
+    <div class="sheet-sec">
+      <div class="sheet-lbl-sm">Log an entry</div>
+      <div class="entry-row">
+        <input type="date" class="date-in" id="sheetDate"/>
+        <button class="btn-add" onclick="sheetAddEntry()">Add entry</button>
+      </div>
+    </div>
+    <div class="sheet-sec">
+      <div class="sheet-lbl-sm">History</div>
+      <div class="hist-list" id="sheetHist"></div>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn-today" onclick="sheetToday()">✓ Did it today</button>
+      <button class="btn-del" onclick="sheetDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+
 <div class="modal-overlay" id="lblModal">
   <div class="modal">
     <h2>Manage <em>labels</em></h2>
@@ -720,61 +788,139 @@ function renderItems(){
   el.innerHTML=list.map(item=>{
     const i=data.items.indexOf(item);
     const days=daysSince(item.lastDate);
-    const avg=avgInterval(item.history);
     const ms=milestone(days);
     const lblObj=(data.labels||[]).find(l=>(l.name||l)===item.label);
     const col=lblObj?.color||null;
     const dc=darken(col||'#7A6A56');
-    const cs=col?`style="color:${dc}"`:'';
-    const dayW=days===1?'day':'days';
-    const sentence=`<span class="count" ${cs}>${days===null?'?':days}</span> ${dayW} since <span class="name" ${cs}>${item.name}</span>`;
-    const chipSt=col?`style="background:${col}40;color:${dc};border:1.5px solid ${col}"`:'style="background:var(--surface2);color:var(--ts)"';
-    const t=today();
-    const hist=[...item.history].reverse();
-    const histRows=hist.length?hist.map(dk=>{
-      const isL=dk===item.lastDate;
-      return`<div class="hist-row"><span class="hist-date">${fmtDate(dk)}</span>${isL?'<span class="hist-tag">latest</span>':''}<button class="hist-x" onclick="doDelEntry(event,${i},'${dk}')">×</button></div>`;
-    }).join(''):'<div class="hist-empty">No entries yet.</div>';
-    return`<div class="item${ms?' milestone':''}" id="item-${i}">
-      <div class="item-head" onclick="toggleItem(${i})">
-        <div class="item-sentence">${sentence}</div>
-        <div class="item-right">
-          ${item.label?`<span class="lbl-chip" ${chipSt}>${item.label}</span>`:''}
-          <span class="chevron">▾</span>
-        </div>
-      </div>
-      ${item.lastDate||avg!==null?`<div class="item-meta">
-        ${item.lastDate?`<span>Last: ${fmtDate(item.lastDate)}</span>`:''}
-        ${avg!==null?`<span>· avg every ${avg}d</span>`:''}
-        ${item.history.length?`<span>· ${item.history.length} entr${item.history.length===1?'y':'ies'}</span>`:''}
-      </div>`:''}
-      <div class="drawer"><div class="drawer-inner"><div class="drawer-body">
-        ${ms?`<div class="ms-strip">🎊 ${ms} milestone — amazing!</div>`:''}
-        <div class="drawer-sec">
-          <div class="drawer-lbl">Log an entry</div>
-          <div class="entry-row">
-            <input type="date" class="date-in" id="ep-${i}" value="${t}" max="${t}"/>
-            <button class="btn-add" onclick="doAddEntry(event,${i})">Add entry</button>
-          </div>
-        </div>
-        <div class="drawer-sec">
-          <div class="drawer-lbl">History</div>
-          <div class="hist-list">${histRows}</div>
-        </div>
-        <div class="drawer-actions">
-          <button class="btn-today" onclick="doToday(event,${i})">✓ Did it today</button>
-          <button class="btn-del" onclick="doRemoveItem(event,${i})">Delete</button>
-        </div>
-      </div></div></div>
+    const countColor=col?dc:(days===null||days>30?'var(--rose)':days>7?'var(--amber)':'var(--sage)');
+    const stripe=col?`<div class="tile-stripe" style="background:${col}"></div>`:'';
+    const lastStr=item.lastDate?fmtDate(item.lastDate):'never';
+    const avg=avgInterval(item.history);
+    const metaStr=item.lastDate?`${lastStr}${avg!==null?' · avg '+avg+'d':''}`:avg!==null?'avg '+avg+'d':'tap to log';
+    return`<div class="tile${ms?' milestone':''}" id="tile-${i}" onclick="openSheet(${i})">
+      ${stripe}
+      ${ms?`<div class="tile-ms">🎊</div>`:''}
+      <div class="tile-count" style="color:${countColor}">${days===null?'?':days}</div>
+      <div class="tile-unit">day${days===1?'':'s'} since</div>
+      <div class="tile-name" style="color:${col?dc:'var(--amber)'}"> ${item.name}</div>
+      <div class="tile-meta">${metaStr}</div>
     </div>`;
   }).join('');
-  list.forEach(item=>{
-    if(item._open){const i=data.items.indexOf(item);document.getElementById('item-'+i)?.classList.add('open')}
-  });
 }
 
-function toggleItem(i){data.items[i]._open=!data.items[i]._open;document.getElementById('item-'+i)?.classList.toggle('open',data.items[i]._open)}
-function setFilter(l){filter=l;renderAll()}
+// ── SHEET ──
+let sheetIdx = null;
+
+function openSheet(i){
+  sheetIdx=i;
+  renderSheet();
+  document.getElementById('sheetOverlay').classList.add('on');
+}
+function closeSheet(){
+  document.getElementById('sheetOverlay').classList.remove('on');
+  sheetIdx=null;
+}
+function closeSheetOnBg(e){if(e.target===document.getElementById('sheetOverlay'))closeSheet()}
+
+function renderSheet(){
+  if(sheetIdx===null)return;
+  const item=data.items[sheetIdx];
+  const days=daysSince(item.lastDate);
+  const avg=avgInterval(item.history);
+  const ms=milestone(days);
+  const lblObj=(data.labels||[]).find(l=>(l.name||l)===item.label);
+  const col=lblObj?.color||null;
+  const dc=darken(col||'#7A6A56');
+  const countColor=col?dc:(days===null||days>30?'var(--rose)':days>7?'var(--amber)':'var(--sage)');
+
+  document.getElementById('sheetCount').textContent=days===null?'?':days;
+  document.getElementById('sheetCount').style.color=countColor;
+  document.getElementById('sheetUnit').textContent=`day${days===1?'':'s'} since`;
+  document.getElementById('sheetName').textContent=item.name;
+  document.getElementById('sheetSub').innerHTML=
+    (item.lastDate?`Last: ${fmtDate(item.lastDate)}`:'Never logged')+
+    (avg!==null?` · avg every ${avg}d`:'');
+  const lblEl=document.getElementById('sheetLbl');
+  if(item.label&&col){
+    lblEl.innerHTML=`<span class="sheet-lbl" style="background:${col}40;color:${dc};border:1.5px solid ${col}">${item.label}</span>`;
+  } else if(item.label){
+    lblEl.innerHTML=`<span class="sheet-lbl" style="background:var(--surface2);color:var(--ts)">${item.label}</span>`;
+  } else { lblEl.innerHTML=''; }
+
+  document.getElementById('sheetMs').innerHTML=ms?`<div class="sheet-ms">🎊 ${ms} milestone — amazing!</div>`:'';
+  document.getElementById('sheetDate').value=today();
+  document.getElementById('sheetDate').max=today();
+
+  const hist=[...item.history].reverse();
+  document.getElementById('sheetHist').innerHTML=hist.length
+    ?hist.map(dk=>{
+        const isL=dk===item.lastDate;
+        return`<div class="hist-row"><span class="hist-date">${fmtDate(dk)}</span>${isL?'<span class="hist-tag">latest</span>':''}<button class="hist-x" onclick="sheetDelEntry('${dk}')">×</button></div>`;
+      }).join('')
+    :'<div class="hist-empty">No entries yet.</div>';
+}
+
+function toggleRename(){
+  const row=document.getElementById('sheetRenameRow');
+  const showing=row.style.display==='flex';
+  row.style.display=showing?'none':'flex';
+  if(!showing){
+    const inp=document.getElementById('sheetRenameInput');
+    inp.value=data.items[sheetIdx].name;
+    inp.focus();inp.select();
+  }
+}
+function saveRename(){
+  const val=document.getElementById('sheetRenameInput').value.trim();
+  if(!val||sheetIdx===null)return;
+  data.items[sheetIdx].name=val;
+  document.getElementById('sheetRenameRow').style.display='none';
+  renderAll();renderSheet();pushGist();
+}
+function toggleLabelEdit(){
+  const row=document.getElementById('sheetLblRow');
+  const showing=row.style.display==='flex';
+  row.style.display=showing?'none':'flex';
+  if(!showing){
+    // populate select with all labels + no label option
+    const sel=document.getElementById('sheetLblSel');
+    sel.innerHTML='<option value="">No label</option>';
+    (data.labels||[]).forEach(l=>{
+      const n=l.name||l;
+      sel.innerHTML+=`<option value="${n}">${n}</option>`;
+    });
+    sel.value=data.items[sheetIdx].label||'';
+  }
+}
+function saveLabelEdit(){
+  if(sheetIdx===null)return;
+  data.items[sheetIdx].label=document.getElementById('sheetLblSel').value;
+  document.getElementById('sheetLblRow').style.display='none';
+  renderAll();renderSheet();pushGist();
+}
+function sheetToday(){
+  if(sheetIdx===null)return;
+  data.items[sheetIdx]=addEntry(data.items[sheetIdx],today());
+  renderAll();renderSheet();pushGist();
+}
+function sheetAddEntry(){
+  if(sheetIdx===null)return;
+  const val=document.getElementById('sheetDate').value;
+  if(!val)return;
+  data.items[sheetIdx]=addEntry(data.items[sheetIdx],val);
+  renderAll();renderSheet();pushGist();
+}
+function sheetDelEntry(dk){
+  if(sheetIdx===null)return;
+  data.items[sheetIdx]=delEntry(data.items[sheetIdx],dk);
+  renderAll();renderSheet();pushGist();
+}
+function sheetDelete(){
+  if(sheetIdx===null)return;
+  if(!confirm(`Delete "${data.items[sheetIdx].name}"?`))return;
+  data.items.splice(sheetIdx,1);
+  closeSheet();renderAll();pushGist();
+}
 
 // ── ITEM ACTIONS ──
 function addItem(){
@@ -782,28 +928,6 @@ function addItem(){
   if(!name)return;
   data.items.push(norm({name,label:lbl,lastDate:null,history:[]}));
   inp.value='';renderAll();pushGist();
-}
-function doToday(e,i){
-  e.stopPropagation();
-  data.items[i]=addEntry(data.items[i],today());
-  data.items[i]._open=true;renderAll();pushGist();
-}
-function doAddEntry(e,i){
-  e.stopPropagation();
-  const val=document.getElementById('ep-'+i).value;
-  if(!val)return;
-  data.items[i]=addEntry(data.items[i],val);
-  data.items[i]._open=true;renderAll();pushGist();
-}
-function doDelEntry(e,i,dk){
-  e.stopPropagation();
-  data.items[i]=delEntry(data.items[i],dk);
-  data.items[i]._open=true;renderAll();pushGist();
-}
-function doRemoveItem(e,i){
-  e.stopPropagation();
-  if(!confirm(`Delete "${data.items[i].name}"?`))return;
-  data.items.splice(i,1);renderAll();pushGist();
 }
 
 // ── LABELS ──
