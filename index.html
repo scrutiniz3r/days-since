@@ -149,10 +149,8 @@ body{font-family:var(--sans);background:var(--bg);color:var(--tp);min-height:100
 
 /* ── BOTTOM SHEET ── */
 .sheet-overlay{display:none;position:fixed;inset:0;background:rgba(44,32,22,.4);z-index:60;backdrop-filter:blur(2px)}
-.sheet-overlay.on{display:flex;align-items:flex-end;justify-content:center}
-@media(min-width:540px){.sheet-overlay.on{align-items:center}}
-.sheet{background:var(--surface);border-radius:24px 24px 0 0;padding:1.25rem 1.25rem 2rem;width:100%;max-width:480px;box-shadow:var(--shadow-lg);max-height:88vh;overflow-y:auto}
-@media(min-width:540px){.sheet{border-radius:24px;margin:1rem}}
+.sheet-overlay.on{display:flex;align-items:center;justify-content:center;padding:1rem}
+.sheet{background:var(--surface);border-radius:24px;padding:1.25rem 1.25rem 1.5rem;width:100%;max-width:480px;box-shadow:var(--shadow-lg);max-height:90vh;overflow-y:auto}
 .sheet-handle{width:36px;height:4px;background:var(--border);border-radius:var(--pill);margin:0 auto 1.25rem}
 .sheet-head{display:flex;align-items:flex-start;gap:10px;margin-bottom:1.25rem}
 .sheet-count{font-family:var(--serif);font-size:52px;font-weight:600;line-height:1}
@@ -183,10 +181,10 @@ body{font-family:var(--sans);background:var(--bg);color:var(--tp);min-height:100
 .hist-empty{font-size:13px;color:var(--th);padding:6px 10px}
 
 /* sheet actions */
-.sheet-actions{display:flex;gap:8px;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border2);flex-wrap:wrap}
-.btn-today{padding:10px 18px;font-size:13px;font-weight:600;background:var(--sage-bg);color:var(--sage);border:none;border-radius:12px;cursor:pointer;transition:opacity .15s}
+.sheet-actions{display:flex;gap:8px;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border2)}
+.btn-today{flex:1;padding:10px 18px;font-size:13px;font-weight:600;background:var(--sage-bg);color:var(--sage);border:none;border-radius:12px;cursor:pointer;transition:opacity .15s;text-align:center}
 .btn-today:hover{opacity:.8}
-.btn-del{padding:10px 14px;font-size:13px;font-weight:500;border:none;border-radius:12px;background:transparent;color:var(--th);cursor:pointer;transition:all .15s;margin-left:auto}
+.btn-del{padding:10px 14px;font-size:13px;font-weight:500;border:none;border-radius:12px;background:transparent;color:var(--th);cursor:pointer;transition:all .15s}
 .btn-del:hover{background:var(--rose-bg);color:var(--rose)}
 
 /* empty */
@@ -474,8 +472,8 @@ body{font-family:var(--sans);background:var(--bg);color:var(--tp);min-height:100
       <div class="hist-list" id="sheetHist"></div>
     </div>
     <div class="sheet-actions">
-      <button class="btn-today" onclick="sheetToday()">✓ Did it today</button>
       <button class="btn-del" onclick="sheetDelete()">Delete</button>
+      <button class="btn-today" onclick="sheetToday()">✓ Did it today</button>
     </div>
   </div>
 </div>
@@ -761,15 +759,20 @@ async function syncNow(){await pullGist()}
 function renderAll(){renderChips();renderLabelSel();renderItems()}
 function renderChips(){
   const lbls=data.labels||[];
-  let h=`<button class="chip${filter===''?' on':''}" onclick="setFilter('')">All</button>`;
+  let h=`<button class="chip${filter===''?' on':''}" data-filter="">All</button>`;
   lbls.forEach(l=>{
     const n=l.name||l,c=l.color||null;
     const st=filter===n&&c?`style="background:${c};border-color:${c};color:${darken(c,.4)}"`:
               c?`style="border-color:${c}44"`:'';
-    h+=`<button class="chip${filter===n?' on':''}" ${st} onclick="setFilter('${n}')">${n}</button>`;
+    h+=`<button class="chip${filter===n?' on':''}" ${st} data-filter="${n.replace(/"/g,'&quot;')}">${n}</button>`;
   });
   h+=`<button class="chip mgmt" onclick="openLblModal()">⚙ Labels</button>`;
-  document.getElementById('chips').innerHTML=h;
+  const el=document.getElementById('chips');
+  el.innerHTML=h;
+  // attach click handlers safely via data attribute
+  el.querySelectorAll('[data-filter]').forEach(btn=>{
+    btn.addEventListener('click',()=>setFilter(btn.dataset.filter));
+  });
 }
 function renderLabelSel(){
   const s=document.getElementById('newLbl');
