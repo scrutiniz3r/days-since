@@ -114,15 +114,27 @@ body{font-family:var(--sans);background:var(--bg);color:var(--tp);min-height:100
 .notif-strip:hover{opacity:.85}
 .notif-strip.off{display:none}
 
-/* ADD BAR */
-.add-bar{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
-.add-input{flex:1;min-width:200px;padding:10px 14px;font-size:14px;border:1.5px solid var(--border);border-radius:12px;background:var(--surface);color:var(--tp);outline:none;font-family:var(--sans);transition:border-color .15s;box-shadow:var(--shadow)}
-.add-input:focus{border-color:var(--amber)}
-.add-input::placeholder{color:var(--th)}
-.add-bar-row2{display:flex;gap:8px;width:100%}
-.lbl-sel{flex:1;padding:10px 12px;font-size:13px;border:1.5px solid var(--border);border-radius:12px;background:var(--surface);color:var(--tp);outline:none;font-family:var(--sans);cursor:pointer;box-shadow:var(--shadow)}
-.add-btn{padding:10px 20px;font-size:14px;font-weight:600;background:var(--tp);color:var(--bg);border:none;border-radius:12px;cursor:pointer;transition:opacity .15s;font-family:var(--sans);white-space:nowrap}
-.add-btn:hover{opacity:.82}
+/* ── FAB ── */
+.fab{position:fixed;bottom:1.5rem;right:1.5rem;width:56px;height:56px;border-radius:50%;background:var(--tp);color:var(--bg);border:none;font-size:28px;font-weight:300;cursor:pointer;box-shadow:0 4px 20px rgba(44,32,22,.25);display:flex;align-items:center;justify-content:center;z-index:30;transition:transform .15s,opacity .15s;line-height:1}
+.fab:hover{transform:scale(1.08)}
+.fab:active{transform:scale(.93)}
+
+/* ── ADD MODAL ── */
+.add-overlay{display:none;position:fixed;inset:0;background:rgba(44,32,22,.4);z-index:70;align-items:center;justify-content:center;padding:1.5rem;backdrop-filter:blur(3px)}
+.add-overlay.on{display:flex}
+.add-modal{background:var(--surface);border-radius:24px;padding:1.5rem;width:100%;max-width:400px;box-shadow:var(--shadow-lg)}
+.add-modal-title{font-family:var(--serif);font-size:22px;font-weight:300;margin-bottom:1.1rem;color:var(--tp)}
+.add-modal-title em{font-style:italic;color:var(--amber)}
+.add-modal-input{width:100%;padding:12px 14px;font-size:15px;border:1.5px solid var(--border);border-radius:14px;background:var(--bg);color:var(--tp);outline:none;font-family:var(--sans);margin-bottom:1rem;transition:border-color .15s}
+.add-modal-input:focus{border-color:var(--amber)}
+.add-modal-input::placeholder{color:var(--th)}
+.add-modal-label-row{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:1.25rem;min-height:32px}
+.add-lbl-chip{padding:6px 14px;font-size:12px;font-weight:500;border:1.5px solid var(--border);border-radius:var(--pill);background:transparent;color:var(--ts);cursor:pointer;transition:all .15s;white-space:nowrap}
+.add-lbl-chip.picked{background:var(--tp);color:var(--bg);border-color:var(--tp)}
+.add-modal-actions{display:flex;gap:8px;justify-content:flex-end}
+.add-modal-cancel{padding:10px 16px;font-size:14px;font-weight:500;border:1.5px solid var(--border);border-radius:12px;background:transparent;color:var(--ts);cursor:pointer;font-family:var(--sans)}
+.add-modal-submit{padding:10px 20px;font-size:14px;font-weight:600;background:var(--tp);color:var(--bg);border:none;border-radius:12px;cursor:pointer;font-family:var(--sans);transition:opacity .15s}
+.add-modal-submit:hover{opacity:.85}
 
 /* FILTER CHIPS */
 .chips{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:1rem}
@@ -252,11 +264,6 @@ body{font-family:var(--sans);background:var(--bg);color:var(--tp);min-height:100
   .tile-count{font-size:32px}
   .main{padding:.75rem}
 }
-@media(min-width:600px){
-  .add-bar{flex-wrap:nowrap}
-  .add-bar-row2{width:auto}
-  .add-input{min-width:0}
-}
 @media(prefers-reduced-motion:reduce){
   *{transition:none!important;animation:none!important}
 }
@@ -355,18 +362,26 @@ body{font-family:var(--sans);background:var(--bg);color:var(--tp);min-height:100
     <div class="notif-strip off" id="notifStrip" onclick="askNotif()">
       🔔 Tap to get milestone alerts when you open this page
     </div>
-    <div class="add-bar">
-      <input class="add-input" id="newName" placeholder="What do you want to track?"/>
-      <div class="add-bar-row2">
-        <select class="lbl-sel" id="newLbl"><option value="">No label</option></select>
-        <button class="add-btn" onclick="addItem()">+ Add</button>
-      </div>
-    </div>
     <div class="chips" id="chips"></div>
     <div class="items" id="items"></div>
   </div>
   <div class="syncbar"><div class="dot" id="dot"></div><span id="syncTxt">Not synced yet</span></div>
+
+  <!-- floating + bubble -->
+  <button class="fab" onclick="openAddModal()" aria-label="Add new item">+</button>
 </div>
+
+<!-- ── ADD MODAL ── -->
+<div class="add-overlay" id="addOverlay" onclick="closeAddOnBg(event)">
+  <div class="add-modal">
+    <div class="add-modal-title">Track something <em>new</em></div>
+    <input class="add-modal-input" id="addName" placeholder="What do you want to track?" autocomplete="off"/>
+    <div class="add-modal-label-row" id="addLabelRow"></div>
+    <div class="add-modal-actions">
+      <button class="add-modal-cancel" onclick="closeAddModal()">Cancel</button>
+      <button class="add-modal-submit" onclick="submitAdd()">Add →</button>
+    </div>
+  </div>
 
 <!-- ── SETTINGS PANEL ── -->
 <div class="settings-overlay" id="settingsOverlay" onclick="closeSettingsOnBg(event)">
@@ -756,7 +771,7 @@ async function pushGist(){
 async function syncNow(){await pullGist()}
 
 // ── RENDER ──
-function renderAll(){renderChips();renderLabelSel();renderItems()}
+function renderAll(){renderChips();renderItems()}
 function renderChips(){
   const lbls=data.labels||[];
   let h=`<button class="chip${filter===''?' on':''}" data-filter="">All</button>`;
@@ -773,13 +788,6 @@ function renderChips(){
   el.querySelectorAll('[data-filter]').forEach(btn=>{
     btn.addEventListener('click',()=>setFilter(btn.dataset.filter));
   });
-}
-function renderLabelSel(){
-  const s=document.getElementById('newLbl');
-  s.innerHTML='<option value="">No label</option>';
-  (data.labels||[]).forEach(l=>{const n=l.name||l;s.innerHTML+=`<option value="${n}">${n}</option>`});
-  // Pre-select the active filter so adding an item inherits the current label view
-  if(filter) s.value=filter;
 }
 function renderItems(){
   const el=document.getElementById('items');
@@ -925,13 +933,49 @@ function sheetDelete(){
   closeSheet();renderAll();pushGist();
 }
 
-// ── ITEM ACTIONS ──
-function addItem(){
-  const inp=document.getElementById('newName'),lbl=document.getElementById('newLbl').value,name=inp.value.trim();
-  if(!name)return;
-  data.items.push(norm({name,label:lbl,lastDate:null,history:[]}));
-  inp.value='';renderAll();pushGist();
+function setFilter(l){filter=l;renderAll()}
+
+// ── ADD MODAL ──
+let addSelectedLabel='';
+function openAddModal(){
+  addSelectedLabel=filter||''; // pre-select active filter
+  renderAddLabels();
+  document.getElementById('addName').value='';
+  document.getElementById('addOverlay').classList.add('on');
+  setTimeout(()=>document.getElementById('addName').focus(),120);
 }
+function closeAddModal(){
+  document.getElementById('addOverlay').classList.remove('on');
+}
+function closeAddOnBg(e){if(e.target===document.getElementById('addOverlay'))closeAddModal()}
+function renderAddLabels(){
+  const row=document.getElementById('addLabelRow');
+  let h=`<button class="add-lbl-chip${addSelectedLabel===''?' picked':''}" data-lbl="">No label</button>`;
+  (data.labels||[]).forEach(l=>{
+    const n=l.name||l, c=l.color||null;
+    const picked=addSelectedLabel===n;
+    const st=picked&&c?`style="background:${c};border-color:${c};color:${darken(c,.4)}"`
+            :c?`style="border-color:${c}55"` :'';
+    h+=`<button class="add-lbl-chip${picked?' picked':''}" ${st} data-lbl="${n.replace(/"/g,'&quot;')}">${n}</button>`;
+  });
+  row.innerHTML=h;
+  row.querySelectorAll('[data-lbl]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      addSelectedLabel=btn.dataset.lbl;
+      renderAddLabels();
+    });
+  });
+}
+function submitAdd(){
+  const name=document.getElementById('addName').value.trim();
+  if(!name)return;
+  data.items.push(norm({name,label:addSelectedLabel,lastDate:null,history:[]}));
+  closeAddModal();
+  renderAll();pushGist();
+}
+
+// ── ITEM ACTIONS ──
+function addItem(){} // kept for safety, replaced by submitAdd
 
 // ── LABELS ──
 function openLblModal(){renderLblList();document.getElementById('lblModal').classList.add('on')}
@@ -994,8 +1038,9 @@ document.addEventListener('keydown',e=>{
     else if(e.key==='Backspace')pk('⌫');
     else if(e.key==='Enter')pk('✓');
   }
+  if(document.getElementById('addOverlay').classList.contains('on')&&e.key==='Enter') submitAdd();
+  if(e.key==='Escape') closeAddModal();
 });
-document.getElementById('newName').addEventListener('keydown',e=>{if(e.key==='Enter')addItem()});
 
 boot();
 </script>
