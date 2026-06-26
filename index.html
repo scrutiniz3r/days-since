@@ -377,11 +377,17 @@ body{font-family:var(--sans);background:var(--bg);color:var(--tp);min-height:100
     <div class="add-modal-title">Track something <em>new</em></div>
     <input class="add-modal-input" id="addName" placeholder="What do you want to track?" autocomplete="off"/>
     <div class="add-modal-label-row" id="addLabelRow"></div>
+    <div class="add-new-lbl-row" id="addNewLblRow" style="display:none;gap:7px;margin-bottom:.75rem">
+      <input type="text" id="addNewLblInput" class="add-modal-input" style="margin-bottom:0;flex:1" placeholder="Label name…"/>
+      <button onclick="confirmNewLabel()" style="padding:10px 14px;font-size:13px;font-weight:600;background:var(--amber);color:#fff;border:none;border-radius:12px;cursor:pointer;white-space:nowrap">Add</button>
+      <button onclick="cancelNewLabel()" style="padding:10px 10px;font-size:13px;background:transparent;color:var(--th);border:1.5px solid var(--border);border-radius:12px;cursor:pointer">✕</button>
+    </div>
     <div class="add-modal-actions">
       <button class="add-modal-cancel" onclick="closeAddModal()">Cancel</button>
       <button class="add-modal-submit" onclick="submitAdd()">Add →</button>
     </div>
   </div>
+</div>
 
 <!-- ── SETTINGS PANEL ── -->
 <div class="settings-overlay" id="settingsOverlay" onclick="closeSettingsOnBg(event)">
@@ -958,13 +964,35 @@ function renderAddLabels(){
             :c?`style="border-color:${c}55"` :'';
     h+=`<button class="add-lbl-chip${picked?' picked':''}" ${st} data-lbl="${n.replace(/"/g,'&quot;')}">${n}</button>`;
   });
+  h+=`<button class="add-lbl-chip" id="addNewLblBtn" style="border-style:dashed;color:var(--th)" data-lbl="__new__">+ New label</button>`;
   row.innerHTML=h;
   row.querySelectorAll('[data-lbl]').forEach(btn=>{
     btn.addEventListener('click',()=>{
+      if(btn.dataset.lbl==='__new__'){ showNewLabelInput(); return; }
       addSelectedLabel=btn.dataset.lbl;
       renderAddLabels();
     });
   });
+}
+function showNewLabelInput(){
+  document.getElementById('addNewLblRow').style.display='flex';
+  document.getElementById('addNewLblInput').value='';
+  document.getElementById('addNewLblInput').focus();
+}
+function cancelNewLabel(){
+  document.getElementById('addNewLblRow').style.display='none';
+}
+function confirmNewLabel(){
+  const inp=document.getElementById('addNewLblInput');
+  const n=inp.value.trim();
+  if(!n)return;
+  if(!(data.labels||[]).find(l=>(l.name||l)===n)){
+    data.labels.push({name:n,color:PALETTE[data.labels.length%PALETTE.length]});
+    lsSet(DK,data);
+  }
+  addSelectedLabel=n;
+  document.getElementById('addNewLblRow').style.display='none';
+  renderAddLabels();
 }
 function submitAdd(){
   const name=document.getElementById('addName').value.trim();
