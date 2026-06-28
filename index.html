@@ -188,7 +188,10 @@ button{transition:transform .15s,box-shadow .15s,opacity .15s,background .15s,co
 .sheet-sec{margin-bottom:1.1rem}
 .sheet-lbl-sm{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--th);margin-bottom:.55rem}
 
-/* log entry */
+/* notes */
+.sheet-notes{width:100%;padding:10px 12px;font-size:13px;border:1.5px solid var(--border);border-radius:12px;background:var(--bg);color:var(--tp);outline:none;font-family:var(--sans);line-height:1.6;resize:none;transition:border-color .15s,height .2s;height:38px;overflow:hidden}
+.sheet-notes:focus{border-color:var(--amber);height:90px;overflow:auto}
+.sheet-notes::placeholder{color:var(--th)}
 .entry-row{display:flex;gap:7px}
 .date-in{flex:1;padding:9px 12px;font-size:13px;border:1.5px solid var(--border);border-radius:12px;background:var(--bg);color:var(--tp);outline:none;font-family:var(--sans);transition:border-color .15s}
 .date-in:focus{border-color:var(--amber)}
@@ -211,8 +214,8 @@ button{transition:transform .15s,box-shadow .15s,opacity .15s,background .15s,co
 .btn-today{flex:1;padding:10px 18px;font-size:13px;font-weight:600;background:var(--sage-bg);color:var(--sage);border:none;border-radius:12px;cursor:pointer;text-align:center}
 .btn-today:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(90,138,86,.25)}
 .btn-today:active{transform:scale(.96)}
-.btn-del{padding:10px 16px;font-size:13px;font-weight:600;border:none;border-radius:12px;background:var(--rose-bg);color:var(--rose);cursor:pointer;box-shadow:0 2px 8px rgba(200,88,74,.25)}
-.btn-del:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(200,88,74,.4)}
+.btn-del{padding:10px 16px;font-size:13px;font-weight:600;border:1.5px solid var(--border);border-radius:12px;background:transparent;color:var(--ts);cursor:pointer}
+.btn-del:hover{border-color:var(--rose);color:var(--rose);background:var(--rose-bg);transform:translateY(-1px);box-shadow:0 4px 12px rgba(200,88,74,.2)}
 .btn-del:active{transform:scale(.96)}
 
 /* empty */
@@ -497,6 +500,10 @@ button{transition:transform .15s,box-shadow .15s,opacity .15s,background .15s,co
     </div>
     <div id="sheetMs"></div>
     <div class="sheet-sec">
+      <div class="sheet-lbl-sm">Notes</div>
+      <textarea id="sheetNotes" class="sheet-notes" placeholder="This space allows you to express yourself, GO CRAZY." oninput="saveNotes()"></textarea>
+    </div>
+    <div class="sheet-sec">
       <div class="sheet-lbl-sm">Log an entry</div>
       <div class="entry-row">
         <input type="date" class="date-in" id="sheetDate"/>
@@ -644,7 +651,7 @@ function buildGreeting(){
   document.getElementById('greetText').innerHTML=`<span style="font-size:12px;font-family:var(--sans);font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--th)">${q.law}</span><br><em>${q.title}</em>`;
   document.getElementById('greetSub').textContent='\u201C'+q.quote+'\u201D';
   go('greetScreen');
-  setTimeout(()=>go('mainScreen'),5000);
+  setTimeout(()=>go('mainScreen'),8000);
 }
 
 // ── BOOT ──
@@ -882,6 +889,9 @@ function renderSheet(){
   document.getElementById('sheetMs').innerHTML=ms?`<div class="sheet-ms">🎊 ${ms} milestone — amazing!</div>`:'';
   document.getElementById('sheetDate').value=today();
   document.getElementById('sheetDate').max=today();
+  const notesEl=document.getElementById('sheetNotes');
+  notesEl.value=item.notes||'';
+  notesEl.style.height=item.notes?'90px':'38px';
 
   const hist=[...item.history].reverse();
   document.getElementById('sheetHist').innerHTML=hist.length
@@ -930,9 +940,16 @@ function saveLabelEdit(){
   document.getElementById('sheetLblRow').style.display='none';
   renderAll();renderSheet();pushGist();
 }
+function saveNotes(){
+  if(sheetIdx===null)return;
+  data.items[sheetIdx].notes=document.getElementById('sheetNotes').value;
+  lsSet(DK,data);
+  // debounce push to avoid hammering gist on every keystroke
+  clearTimeout(saveNotes._t);
+  saveNotes._t=setTimeout(()=>pushGist(),1500);
+}
 function sheetToday(){
   if(sheetIdx===null)return;
-  data.items[sheetIdx]=addEntry(data.items[sheetIdx],today());
   renderAll();renderSheet();pushGist();
 }
 function sheetAddEntry(){
