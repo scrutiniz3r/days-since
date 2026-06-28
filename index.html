@@ -11,6 +11,14 @@
 <meta name="apple-mobile-web-app-title" content="Days Since"/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script>
+// Run before CSS paints to avoid flash
+(function(){
+  const t=localStorage.getItem('dsc_theme');
+  const dark=t?t==='dark':window.matchMedia('(prefers-color-scheme:dark)').matches;
+  document.documentElement.setAttribute('data-theme',dark?'dark':'light');
+})();
+</script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
@@ -36,8 +44,26 @@
   --shadow-lg:0 8px 32px rgba(44,32,22,.12);
 }
 
+[data-theme="dark"]{
+  --bg:#141210;
+  --surface:#1F1C18;
+  --surface2:#2A2620;
+  --border:#3A342C;
+  --border2:#302A22;
+  --tp:#F0EAE0;
+  --ts:#A09080;
+  --th:#706050;
+  --rose:#F08878;
+  --rose-bg:#3A1810;
+  --amber:#F0A840;
+  --amber-bg:#382210;
+  --sage:#88C878;
+  --sage-bg:#182818;
+  --shadow:0 2px 12px rgba(0,0,0,.4);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.6);
+}
 body{font-family:var(--sans);background:var(--bg);color:var(--tp);min-height:100vh;-webkit-font-smoothing:antialiased}
-.screen{display:none;min-height:100vh}
+.screen{display:none;min-height:100vh;background:var(--bg)}
 .screen.active{display:flex;flex-direction:column}
 
 /* ─── SETUP SCREEN ─── */
@@ -118,7 +144,7 @@ button{transition:transform .15s,box-shadow .15s,opacity .15s,background .15s,co
 .btn-lift:active{transform:scale(.95);box-shadow:none}
 
 /* ─── MAIN ─── */
-.main{flex:1;max-width:860px;margin:0 auto;width:100%;padding:1rem 1.25rem}
+.main{flex:1;max-width:860px;margin:0 auto;width:100%;padding:1rem 1.25rem;background:var(--bg)}
 
 .notif-strip{display:flex;align-items:center;gap:10px;background:var(--amber-bg);color:var(--amber);border-radius:14px;padding:11px 14px;font-size:13px;margin-bottom:1.25rem;cursor:pointer;border:1.5px solid #EDCFA8}
 .notif-strip:hover{opacity:.85}
@@ -168,7 +194,7 @@ button{transition:transform .15s,box-shadow .15s,opacity .15s,background .15s,co
 .tile-stripe{position:absolute;top:0;left:0;right:0;height:3px;border-radius:16px 16px 0 0}
 .tile-count{font-family:var(--serif);font-size:38px;font-weight:600;line-height:1;margin-top:4px}
 .tile-unit{font-size:11px;color:var(--th);font-weight:400;letter-spacing:.03em;margin-top:1px}
-.tile-name{font-size:18px;font-weight:600;font-family:var(--serif);font-style:italic;color:var(--amber);margin-top:auto;padding-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile-name{font-size:24px;font-weight:500;font-family:var(--serif);font-style:italic;color:var(--amber);margin-top:auto;padding-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2}
 .tile-meta{font-size:10px;color:var(--th);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tile-ms{position:absolute;top:10px;right:10px;font-size:14px}
 
@@ -189,9 +215,9 @@ button{transition:transform .15s,box-shadow .15s,opacity .15s,background .15s,co
 .sheet-lbl-sm{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--th);margin-bottom:.55rem}
 
 /* notes */
-.sheet-notes{width:100%;padding:10px 12px;font-size:13px;border:1.5px solid var(--border);border-radius:12px;background:var(--bg);color:var(--tp);outline:none;font-family:var(--sans);line-height:1.6;resize:none;transition:border-color .15s,height .2s;height:38px;overflow:hidden}
-.sheet-notes:focus{border-color:var(--amber);height:90px;overflow:auto}
-.sheet-notes::placeholder{color:var(--th)}
+.sheet-notes{width:100%;padding:10px 12px;font-size:13px;border:1.5px solid var(--border);border-radius:12px;background:var(--bg);color:var(--tp);outline:none;font-family:var(--sans);line-height:1.6;resize:none;transition:border-color .2s,height .2s;height:38px;overflow:hidden;display:block;vertical-align:top}
+.sheet-notes:focus{border-color:var(--amber);height:100px;overflow:auto}
+.sheet-notes::placeholder{color:var(--th);font-size:12px;line-height:1.5}
 .entry-row{display:flex;gap:7px}
 .date-in{flex:1;padding:9px 12px;font-size:13px;border:1.5px solid var(--border);border-radius:12px;background:var(--bg);color:var(--tp);outline:none;font-family:var(--sans);transition:border-color .15s}
 .date-in:focus{border-color:var(--amber)}
@@ -417,6 +443,17 @@ button{transition:transform .15s,box-shadow .15s,opacity .15s,background .15s,co
 
     <div class="setting-row">
       <div class="setting-info">
+        <strong>Dark mode</strong>
+        <small>Switch to a darker, easier-on-the-eyes theme</small>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="darkToggle" onchange="toggleDarkMode()"/>
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-info">
         <strong>PIN protection</strong>
         <small>Lock the app behind a 4-digit PIN</small>
       </div>
@@ -488,7 +525,7 @@ button{transition:transform .15s,box-shadow .15s,opacity .15s,background .15s,co
         <div class="sheet-sub" id="sheetSub"></div>
         <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
           <div id="sheetLbl"></div>
-          <button onclick="toggleLabelEdit()" style="font-size:11px;color:var(--th);background:none;border:none;cursor:pointer;padding:2px 4px;border-radius:6px" title="Change label">✎</button>
+          <button id="sheetLblEditBtn" onclick="toggleLabelEdit()" style="font-size:11px;color:var(--th);background:none;border:1px dashed var(--border);cursor:pointer;padding:3px 8px;border-radius:6px;font-family:var(--sans)">Add label</button>
         </div>
         <div id="sheetLblRow" style="display:none;margin-top:6px;gap:6px;flex-wrap:wrap">
           <select id="sheetLblSel" style="flex:1;padding:7px 10px;font-size:13px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);color:var(--tp);font-family:var(--sans);outline:none"></select>
@@ -501,7 +538,7 @@ button{transition:transform .15s,box-shadow .15s,opacity .15s,background .15s,co
     <div id="sheetMs"></div>
     <div class="sheet-sec">
       <div class="sheet-lbl-sm">Notes</div>
-      <textarea id="sheetNotes" class="sheet-notes" placeholder="This space allows you to express yourself, GO CRAZY." oninput="saveNotes()"></textarea>
+      <textarea id="sheetNotes" class="sheet-notes" placeholder="Treat me like your 5th standard rough-book" oninput="saveNotes()"></textarea>
     </div>
     <div class="sheet-sec">
       <div class="sheet-lbl-sm">Log an entry</div>
@@ -604,8 +641,27 @@ function fmtDate(dk){
   return new Date(y,m-1,d).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'});
 }
 function darken(hex,f=.52){
+  const isDark=document.documentElement.getAttribute('data-theme')==='dark';
   let r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
-  return`#${Math.round(r*f).toString(16).padStart(2,'0')}${Math.round(g*f).toString(16).padStart(2,'0')}${Math.round(b*f).toString(16).padStart(2,'0')}`;
+  if(isDark){
+    const lf=1.6;
+    r=Math.min(255,Math.round(r+(255-r)*(1-1/lf)));
+    g=Math.min(255,Math.round(g+(255-g)*(1-1/lf)));
+    b=Math.min(255,Math.round(b+(255-b)*(1-1/lf)));
+  } else {
+    r=Math.round(r*f);g=Math.round(g*f);b=Math.round(b*f);
+  }
+  return`#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`;
+}
+// Returns a translucent tint of the label colour — stronger in dark mode
+function colBg(hex){
+  const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+  return hex+(isDark?'55':'40');
+}
+// In light mode use the raw pastel as border (original look); dark mode needs more opacity
+function colBorder(hex){
+  const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+  return isDark?hex+'AA':hex;
 }
 
 // ── SCREENS ──
@@ -725,6 +781,7 @@ function openSettings(){
   document.getElementById('pinEnabled').checked=!!(conf&&conf.pinHash);
   document.getElementById('pinChangeRow').classList.toggle('show',!!(conf&&conf.pinHash));
   document.getElementById('lockNowBtn').style.display=conf&&conf.pinHash?'':'none';
+  document.getElementById('darkToggle').checked=localStorage.getItem('dsc_theme')==='dark';
 }
 function closeSettings(){document.getElementById('settingsOverlay').classList.remove('on')}
 function closeSettingsOnBg(e){if(e.target===document.getElementById('settingsOverlay'))closeSettings()}
@@ -805,7 +862,7 @@ function renderChips(){
   let h=`<button class="chip${filter===''?' on':''}" data-filter="">All</button>`;
   lbls.forEach(l=>{
     const n=l.name||l,c=l.color||null;
-    const st=filter===n&&c?`style="background:${c};border-color:${c};color:${darken(c,.4)}"`:
+    const st=filter===n&&c?`style="background:${colBg(c)};border-color:${colBorder(c)};color:${darken(c)}"`:
               c?`style="border-color:${c}44"`:'';
     h+=`<button class="chip${filter===n?' on':''}" ${st} data-filter="${n.replace(/"/g,'&quot;')}">${n}</button>`;
   });
@@ -831,18 +888,15 @@ function renderItems(){
     const lblObj=(data.labels||[]).find(l=>(l.name||l)===item.label);
     const col=lblObj?.color||null;
     const dc=darken(col||'#7A6A56');
-    const countColor=col?dc:(days===null||days>30?'var(--rose)':days>7?'var(--amber)':'var(--sage)');
+    const countColor=col?darken(col,.75):(days===null||days>30?'var(--rose)':days>7?'var(--amber)':'var(--sage)');
     const stripe=col?`<div class="tile-stripe" style="background:${col}"></div>`:'';
-    const lastStr=item.lastDate?fmtDate(item.lastDate):'never';
     const avg=avgInterval(item.history);
-    const metaStr=item.lastDate?`${lastStr}${avg!==null?' · avg '+avg+'d':''}`:avg!==null?'avg '+avg+'d':'tap to log';
     return`<div class="tile${ms?' milestone':''}" id="tile-${i}" onclick="openSheet(${i})">
       ${stripe}
       ${ms?`<div class="tile-ms">🎊</div>`:''}
       <div class="tile-count" style="color:${countColor}">${days===null?'?':days}</div>
       <div class="tile-unit">day${days===1?'':'s'} since</div>
-      <div class="tile-name" style="color:${col?dc:'var(--amber)'}"> ${item.name}</div>
-      <div class="tile-meta">${metaStr}</div>
+      <div class="tile-name" style="color:${col?darken(col,.75):'var(--amber)'}"> ${item.name}</div>
     </div>`;
   }).join('');
 }
@@ -880,11 +934,20 @@ function renderSheet(){
     (item.lastDate?`Last: ${fmtDate(item.lastDate)}`:'Never logged')+
     (avg!==null?` · avg every ${avg}d`:'');
   const lblEl=document.getElementById('sheetLbl');
+  const lblBtn=document.getElementById('sheetLblEditBtn');
   if(item.label&&col){
-    lblEl.innerHTML=`<span class="sheet-lbl" style="background:${col}40;color:${dc};border:1.5px solid ${col}">${item.label}</span>`;
+    lblEl.innerHTML=`<span class="sheet-lbl" style="background:${colBg(col)};color:${dc};border:1.5px solid ${colBorder(col)};cursor:pointer" onclick="toggleLabelEdit()" title="Change label">${item.label}</span>`;
+    lblBtn.style.display='none';
   } else if(item.label){
-    lblEl.innerHTML=`<span class="sheet-lbl" style="background:var(--surface2);color:var(--ts)">${item.label}</span>`;
-  } else { lblEl.innerHTML=''; }
+    lblEl.innerHTML=`<span class="sheet-lbl" style="background:var(--surface2);color:var(--ts);cursor:pointer" onclick="toggleLabelEdit()" title="Change label">${item.label}</span>`;
+    lblBtn.style.display='none';
+  } else {
+    lblEl.innerHTML='';
+    lblBtn.style.display='';
+    lblBtn.textContent='Add label';
+    lblBtn.style.border='1px dashed var(--border)';
+    lblBtn.style.padding='3px 8px';
+  }
 
   document.getElementById('sheetMs').innerHTML=ms?`<div class="sheet-ms">🎊 ${ms} milestone — amazing!</div>`:'';
   document.getElementById('sheetDate').value=today();
@@ -994,7 +1057,7 @@ function renderAddLabels(){
   (data.labels||[]).forEach(l=>{
     const n=l.name||l, c=l.color||null;
     const picked=addSelectedLabel===n;
-    const st=picked&&c?`style="background:${c};border-color:${c};color:${darken(c,.4)}"`
+    const st=picked&&c?`style="background:${colBg(c)};border-color:${colBorder(c)};color:${darken(c)}"` 
             :c?`style="border-color:${c}55"` :'';
     h+=`<button class="add-lbl-chip${picked?' picked':''}" ${st} data-lbl="${n.replace(/"/g,'&quot;')}">${n}</button>`;
   });
@@ -1121,6 +1184,21 @@ document.addEventListener('pointerdown', e=>{
   else if(btn.classList.contains('btn-today')||btn.classList.contains('btn-cta')||btn.classList.contains('add-modal-submit')||btn.classList.contains('greet-continue')) haptic('medium');
   else haptic('light');
 }, {passive:true});
+
+// ── DARK MODE ──
+function applyTheme(dark){
+  document.documentElement.setAttribute('data-theme',dark?'dark':'light');
+}
+function toggleDarkMode(){
+  const dark=document.getElementById('darkToggle').checked;
+  applyTheme(dark);
+  localStorage.setItem('dsc_theme',dark?'dark':'light');
+}
+function initTheme(){
+  const saved=localStorage.getItem('dsc_theme');
+  const dark=saved?saved==='dark':window.matchMedia('(prefers-color-scheme:dark)').matches;
+  applyTheme(dark);
+}
 
 boot();
 </script>
