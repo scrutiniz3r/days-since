@@ -5,18 +5,21 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Days Since</title>
 <link rel="manifest" href="manifest.json"/>
-<meta name="theme-color" content="#FBF7F0"/>
+<meta name="theme-color" content="#FBF7F0" id="themeColorMeta"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
 <meta name="apple-mobile-web-app-title" content="Days Since"/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <script>
-// Run before CSS paints to avoid flash
 (function(){
   const t=localStorage.getItem('dsc_theme');
   const dark=t?t==='dark':window.matchMedia('(prefers-color-scheme:dark)').matches;
   document.documentElement.setAttribute('data-theme',dark?'dark':'light');
+  document.addEventListener('DOMContentLoaded',function(){
+    const meta=document.getElementById('themeColorMeta');
+    if(meta) meta.setAttribute('content',dark?'#141210':'#FBF7F0');
+  });
 })();
 </script>
 <style>
@@ -215,9 +218,9 @@ button{transition:transform .15s,box-shadow .15s,opacity .15s,background .15s,co
 .sheet-lbl-sm{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--th);margin-bottom:.55rem}
 
 /* notes */
-.sheet-notes{width:100%;padding:10px 12px;font-size:13px;border:1.5px solid var(--border);border-radius:12px;background:var(--bg);color:var(--tp);outline:none;font-family:var(--sans);line-height:1.6;resize:none;transition:border-color .2s,height .2s;height:38px;overflow:hidden;display:block;vertical-align:top}
-.sheet-notes:focus{border-color:var(--amber);height:100px;overflow:auto}
-.sheet-notes::placeholder{color:var(--th);font-size:12px;line-height:1.5}
+.sheet-notes{width:100%;padding:8px 12px;font-size:13px;border:1.5px solid var(--border);border-radius:12px;background:var(--bg);color:var(--tp);outline:none;font-family:var(--sans);line-height:1.5;resize:none;transition:border-color .2s;display:block;overflow:hidden;min-height:34px}
+.sheet-notes:focus{border-color:var(--amber)}
+.sheet-notes::placeholder{color:var(--th);font-size:12px;line-height:1.4}
 .entry-row{display:flex;gap:7px}
 .date-in{flex:1;padding:9px 12px;font-size:13px;border:1.5px solid var(--border);border-radius:12px;background:var(--bg);color:var(--tp);outline:none;font-family:var(--sans);transition:border-color .15s}
 .date-in:focus{border-color:var(--amber)}
@@ -954,7 +957,8 @@ function renderSheet(){
   document.getElementById('sheetDate').max=today();
   const notesEl=document.getElementById('sheetNotes');
   notesEl.value=item.notes||'';
-  notesEl.style.height=item.notes?'90px':'38px';
+  notesEl.style.height='auto';
+  if(item.notes) setTimeout(()=>autoResizeNotes(notesEl),0);
 
   const hist=[...item.history].reverse();
   document.getElementById('sheetHist').innerHTML=hist.length
@@ -972,7 +976,10 @@ function toggleRename(){
   if(!showing){
     const inp=document.getElementById('sheetRenameInput');
     inp.value=data.items[sheetIdx].name;
-    inp.focus();inp.select();
+    inp.focus();
+    // Place cursor at end, not select-all
+    const len=inp.value.length;
+    inp.setSelectionRange(len,len);
   }
 }
 function saveRename(){
@@ -1003,11 +1010,13 @@ function saveLabelEdit(){
   document.getElementById('sheetLblRow').style.display='none';
   renderAll();renderSheet();pushGist();
 }
+function autoResizeNotes(el){el.style.height='auto';el.style.height=el.scrollHeight+'px';}
 function saveNotes(){
   if(sheetIdx===null)return;
-  data.items[sheetIdx].notes=document.getElementById('sheetNotes').value;
+  const el=document.getElementById('sheetNotes');
+  autoResizeNotes(el);
+  data.items[sheetIdx].notes=el.value;
   lsSet(DK,data);
-  // debounce push to avoid hammering gist on every keystroke
   clearTimeout(saveNotes._t);
   saveNotes._t=setTimeout(()=>pushGist(),1500);
 }
@@ -1188,6 +1197,11 @@ document.addEventListener('pointerdown', e=>{
 // ── DARK MODE ──
 function applyTheme(dark){
   document.documentElement.setAttribute('data-theme',dark?'dark':'light');
+  const meta=document.getElementById('themeColorMeta');
+  if(meta) meta.setAttribute('content',dark?'#141210':'#FBF7F0');
+  // Update apple status bar style
+  const apple=document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+  if(apple) apple.setAttribute('content',dark?'black':'default');
 }
 function toggleDarkMode(){
   const dark=document.getElementById('darkToggle').checked;
