@@ -498,6 +498,23 @@ button{transition:transform .15s,box-shadow .15s,opacity .15s,background .15s,co
 
     <div class="setting-row">
       <div class="setting-info">
+        <strong>Export data</strong>
+        <small>Download all your data as a JSON file</small>
+      </div>
+      <button class="tb-btn" onclick="exportData()">↓ Export</button>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-info">
+        <strong>Import data</strong>
+        <small>Restore from a previously exported file</small>
+      </div>
+      <button class="tb-btn" onclick="document.getElementById('importFileInput').click()">↑ Import</button>
+      <input type="file" id="importFileInput" accept="application/json" style="display:none" onchange="importData(event)"/>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-info">
         <strong>Reset everything</strong>
         <small>Clears all local data and settings</small>
       </div>
@@ -541,7 +558,7 @@ button{transition:transform .15s,box-shadow .15s,opacity .15s,background .15s,co
     <div id="sheetMs"></div>
     <div class="sheet-sec">
       <div class="sheet-lbl-sm">Notes</div>
-      <textarea id="sheetNotes" class="sheet-notes" placeholder="Treat me like your 5th standard rough-book" oninput="saveNotes()"></textarea>
+      <textarea id="sheetNotes" class="sheet-notes" rows="1" placeholder="Treat me like your 5th standard rough-book" oninput="saveNotes()"></textarea>
     </div>
     <div class="sheet-sec">
       <div class="sheet-lbl-sm">Log an entry</div>
@@ -957,8 +974,7 @@ function renderSheet(){
   document.getElementById('sheetDate').max=today();
   const notesEl=document.getElementById('sheetNotes');
   notesEl.value=item.notes||'';
-  notesEl.style.height='auto';
-  if(item.notes) setTimeout(()=>autoResizeNotes(notesEl),0);
+  setTimeout(()=>autoResizeNotes(notesEl),0);
 
   const hist=[...item.history].reverse();
   document.getElementById('sheetHist').innerHTML=hist.length
@@ -1010,7 +1026,10 @@ function saveLabelEdit(){
   document.getElementById('sheetLblRow').style.display='none';
   renderAll();renderSheet();pushGist();
 }
-function autoResizeNotes(el){el.style.height='auto';el.style.height=el.scrollHeight+'px';}
+function autoResizeNotes(el){
+  el.style.height='0px'; // reset fully so scrollHeight reflects only actual content
+  el.style.height=Math.max(el.scrollHeight,34)+'px';
+}
 function saveNotes(){
   if(sheetIdx===null)return;
   const el=document.getElementById('sheetNotes');
@@ -1194,7 +1213,66 @@ document.addEventListener('pointerdown', e=>{
   else haptic('light');
 }, {passive:true});
 
-// ── DARK MODE ──
+// ── EXPORT / IMPORT ──
+function exportData(){
+  const exportObj={
+    exportedAt:new Date().toISOString(),
+    app:'Days Since',
+    version:1,
+    items:data.items.map(it=>({
+      name:it.name,
+      label:it.label||'',
+      history:it.history||[],
+      lastDate:it.lastDate||null,
+      notes:it.notes||''
+    })),
+    labels:data.labels
+  };
+  const blob=new Blob([JSON.stringify(exportObj,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const dateStr=today();
+  a.href=url;
+  a.download=`days-since-backup-${dateStr}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+async function importData(event){
+  const file=event.target.files[0];
+  if(!file)return;
+  try{
+    const text=await file.text();
+    const parsed=JSON.parse(text);
+    if(!parsed.items||!Array.isArray(parsed.items)){
+      alert('This file doesn\'t look like a valid Days Since export.');
+      return;
+    }
+    const mode=await showConfirm(
+      'Import data',
+      `This file has ${parsed.items.length} item(s) and was exported on ${parsed.exportedAt?new Date(parsed.exportedAt).toLocaleDateString():'an unknown date'}. This will REPLACE all your current data. Continue?`
+    );
+    if(!mode)return;
+    data.items=parsed.items.map(it=>norm({
+      name:it.name,
+      label:it.label||'',
+      history:it.history||[],
+      lastDate:it.lastDate||null,
+      notes:it.notes||''
+    }));
+    if(parsed.labels) data.labels=normLabels(parsed.labels);
+    lsSet(DK,data);
+    renderAll();
+    closeSettings();
+    pushGist();
+  }catch(e){
+    alert('Could not read that file. Make sure it\'s a valid Days Since export.');
+    console.error(e);
+  }
+  event.target.value=''; // reset so re-importing the same file works
+}
 function applyTheme(dark){
   document.documentElement.setAttribute('data-theme',dark?'dark':'light');
   const meta=document.getElementById('themeColorMeta');
