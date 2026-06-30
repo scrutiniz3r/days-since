@@ -193,6 +193,11 @@ button{transition:transform .15s,box-shadow .15s,opacity .15s,background .15s,co
 .tile:hover{box-shadow:var(--shadow-lg);border-color:var(--border);transform:translateY(-1px)}
 .tile:active{transform:scale(.97)}
 .tile.milestone{border-color:var(--sage)}
+.tile.reminder-hit{animation:reminderGlow 2.2s ease-in-out infinite}
+@keyframes reminderGlow{
+  0%,100%{box-shadow:var(--shadow),0 0 0 0 rgba(196,120,58,0)}
+  50%{box-shadow:var(--shadow),0 0 18px 4px rgba(196,120,58,.45)}
+}
 
 .tile-stripe{position:absolute;top:0;left:0;right:0;height:3px;border-radius:16px 16px 0 0}
 .tile-count{font-family:var(--serif);font-size:38px;font-weight:600;line-height:1;margin-top:4px}
@@ -200,6 +205,19 @@ button{transition:transform .15s,box-shadow .15s,opacity .15s,background .15s,co
 .tile-name{font-size:24px;font-weight:500;font-family:var(--serif);font-style:italic;color:var(--amber);margin-top:auto;padding-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2}
 .tile-meta{font-size:10px;color:var(--th);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tile-ms{position:absolute;top:10px;right:10px;font-size:14px}
+.tile-pin{position:absolute;top:10px;left:10px;font-size:12px;opacity:.85}
+
+/* ── TILE CONTEXT MENU ── */
+.ctx-overlay{display:none;position:fixed;inset:0;background:rgba(44,32,22,.4);z-index:65;align-items:flex-end;justify-content:center;backdrop-filter:blur(2px)}
+.ctx-overlay.on{display:flex}
+.ctx-menu{background:var(--surface);border-radius:20px 20px 0 0;padding:1rem 1.25rem 1.5rem;width:100%;max-width:480px;box-shadow:var(--shadow-lg)}
+.ctx-handle{width:36px;height:4px;background:var(--border);border-radius:var(--pill);margin:0 auto 1rem}
+.ctx-title{font-family:var(--serif);font-size:18px;font-style:italic;color:var(--amber);text-align:center;margin-bottom:1rem}
+.ctx-item{width:100%;padding:14px;font-size:15px;font-weight:500;background:var(--surface2);color:var(--tp);border:none;border-radius:14px;cursor:pointer;text-align:left;margin-bottom:8px;font-family:var(--sans)}
+.ctx-item:hover{background:var(--border2)}
+.ctx-item:active{transform:scale(.98)}
+.ctx-item.ctx-danger{color:var(--rose);background:var(--rose-bg)}
+.ctx-item.ctx-danger:hover{opacity:.85}
 
 /* ── BOTTOM SHEET ── */
 .sheet-overlay{display:none;position:fixed;inset:0;background:rgba(44,32,22,.4);z-index:60;backdrop-filter:blur(2px)}
@@ -225,6 +243,8 @@ button{transition:transform .15s,box-shadow .15s,opacity .15s,background .15s,co
 .date-in{flex:1;padding:9px 12px;font-size:13px;border:1.5px solid var(--border);border-radius:12px;background:var(--bg);color:var(--tp);outline:none;font-family:var(--sans);transition:border-color .15s}
 .date-in:focus{border-color:var(--amber)}
 .btn-add{padding:9px 14px;font-size:13px;font-weight:600;background:var(--amber);color:#fff;border:none;border-radius:12px;cursor:pointer;white-space:nowrap}
+.btn-add.faded{background:var(--surface2);color:var(--th);cursor:default;box-shadow:none}
+.btn-add.faded:hover{transform:none;box-shadow:none}
 .btn-add:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(196,120,58,.35)}
 .btn-add:active{transform:scale(.96)}
 
@@ -574,16 +594,16 @@ button{transition:transform .15s,box-shadow .15s,opacity .15s,background .15s,co
     <div class="sheet-sec">
       <div class="sheet-lbl-sm">Remind me when it reaches</div>
       <div class="entry-row">
-        <input type="number" class="date-in" id="sheetReminder" placeholder="e.g. 14" min="1"/>
+        <input type="number" class="date-in" id="sheetReminder" placeholder="Treat 69 as your lucky number" min="1" oninput="updateReminderBtnState()"/>
         <span style="font-size:12px;color:var(--th);align-self:center">days</span>
-        <button class="btn-add" onclick="saveReminder()">Set</button>
+        <button class="btn-add" id="sheetReminderBtn" onclick="saveReminder()">Set</button>
       </div>
     </div>
     <div class="sheet-sec">
       <div class="sheet-lbl-sm">Log an entry</div>
       <div class="entry-row">
-        <input type="date" class="date-in" id="sheetDate"/>
-        <button class="btn-add" onclick="sheetAddEntry()">Add entry</button>
+        <input type="date" class="date-in" id="sheetDate" oninput="updateEntryBtnLabel()"/>
+        <button class="btn-add" id="sheetEntryBtn" onclick="sheetAddEntry()">✓ Did it today</button>
       </div>
     </div>
     <div class="sheet-sec">
@@ -592,11 +612,21 @@ button{transition:transform .15s,box-shadow .15s,opacity .15s,background .15s,co
     </div>
     <div class="sheet-actions">
       <button class="btn-del" onclick="sheetDelete()">Delete</button>
-      <button class="btn-today" onclick="sheetToday()">✓ Did it today</button>
     </div>
   </div>
 </div>
 
+
+<!-- ── TILE CONTEXT MENU ── -->
+<div class="ctx-overlay" id="ctxOverlay" onclick="closeCtxMenu()">
+  <div class="ctx-menu" id="ctxMenu" onclick="event.stopPropagation()">
+    <div class="ctx-handle"></div>
+    <div class="ctx-title" id="ctxTitle"></div>
+    <button class="ctx-item" onclick="ctxDidToday()">✓ Did it today</button>
+    <button class="ctx-item" onclick="ctxTogglePin()" id="ctxPinBtn">📌 Pin to top</button>
+    <button class="ctx-item ctx-danger" onclick="ctxDelete()">🗑 Delete</button>
+  </div>
+</div>
 
 <div class="modal-overlay" id="lblModal">
   <div class="modal">
@@ -934,6 +964,8 @@ function renderItems(){
       return da-db;
     });
   }
+  // Pinned items always float to top regardless of sort
+  list=[...list].sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0));
   if(!list.length){
     el.innerHTML=`<div class="empty-state"><div class="big">${filter?`Nothing in <em>${filter}</em> yet`:'Nothing tracked <em>yet</em>'}</div><small>${filter?'Add something with this label to see it here.':'Add your first item above to get started.'}</small></div>`;
     return;
@@ -948,8 +980,9 @@ function renderItems(){
     const countColor=col?darken(col,.75):(days===null||days>30?'var(--rose)':days>7?'var(--amber)':'var(--sage)');
     const stripe=col?`<div class="tile-stripe" style="background:${col}"></div>`:'';
     const avg=avgInterval(item.history);
-    return`<div class="tile${ms?' milestone':''}" id="tile-${i}" onclick="openSheet(${i})">
+    return`<div class="tile${ms?' milestone':''}${item.reminderAt&&days===item.reminderAt?' reminder-hit':''}" id="tile-${i}" data-idx="${i}">
       ${stripe}
+      ${item.pinned?`<div class="tile-pin">📌</div>`:''}
       ${ms?`<div class="tile-ms">🎊</div>`:''}
       <div class="tile-count" style="color:${countColor}">${days===null?'?':days}</div>
       <div class="tile-unit">day${days===1?'':'s'} since</div>
@@ -958,8 +991,64 @@ function renderItems(){
   }).join('');
 }
 
-// ── SHEET ──
-let sheetIdx = null;
+// ── TILE TAP / LONG-PRESS ──
+let pressTimer=null, pressedIdx=null, longPressFired=false;
+const LONG_PRESS_MS=480;
+
+document.addEventListener('pointerdown',e=>{
+  const tile=e.target.closest('.tile');
+  if(!tile)return;
+  pressedIdx=parseInt(tile.dataset.idx,10);
+  longPressFired=false;
+  pressTimer=setTimeout(()=>{
+    longPressFired=true;
+    haptic('medium');
+    openCtxMenu(pressedIdx);
+  },LONG_PRESS_MS);
+});
+document.addEventListener('pointerup',e=>{
+  const tile=e.target.closest('.tile');
+  clearTimeout(pressTimer);
+  if(tile&&!longPressFired&&pressedIdx!==null){
+    openSheet(pressedIdx);
+  }
+  pressedIdx=null;
+});
+document.addEventListener('pointermove',()=>{ clearTimeout(pressTimer); });
+document.addEventListener('pointercancel',()=>{ clearTimeout(pressTimer); pressedIdx=null; });
+
+// ── CONTEXT MENU ──
+let ctxIdx=null;
+function openCtxMenu(i){
+  ctxIdx=i;
+  const item=data.items[i];
+  document.getElementById('ctxTitle').textContent=item.name;
+  document.getElementById('ctxPinBtn').textContent=item.pinned?'📌 Unpin':'📌 Pin to top';
+  document.getElementById('ctxOverlay').classList.add('on');
+}
+function closeCtxMenu(){
+  document.getElementById('ctxOverlay').classList.remove('on');
+  ctxIdx=null;
+}
+function ctxDidToday(){
+  if(ctxIdx===null)return;
+  data.items[ctxIdx]=addEntry(data.items[ctxIdx],today());
+  closeCtxMenu();renderAll();pushGist();
+}
+function ctxTogglePin(){
+  if(ctxIdx===null)return;
+  data.items[ctxIdx].pinned=!data.items[ctxIdx].pinned;
+  closeCtxMenu();renderAll();pushGist();
+}
+async function ctxDelete(){
+  if(ctxIdx===null)return;
+  const name=data.items[ctxIdx].name;
+  closeCtxMenu();
+  const ok=await showConfirm('Delete item',`Remove "${name}" and all its history? This cannot be undone.`);
+  if(!ok)return;
+  data.items.splice(ctxIdx,1);
+  renderAll();pushGist();
+}
 
 function openSheet(i){
   sheetIdx=i;
@@ -1009,7 +1098,9 @@ function renderSheet(){
   document.getElementById('sheetMs').innerHTML=ms?`<div class="sheet-ms">🎊 ${ms} milestone — amazing!</div>`:'';
   document.getElementById('sheetDate').value=today();
   document.getElementById('sheetDate').max=today();
+  updateEntryBtnLabel();
   document.getElementById('sheetReminder').value=item.reminderAt||'';
+  updateReminderBtnState();
   const notesEl=document.getElementById('sheetNotes');
   notesEl.value=item.notes||'';
   setTimeout(()=>autoResizeNotes(notesEl),0);
@@ -1077,6 +1168,15 @@ function saveNotes(){
   clearTimeout(saveNotes._t);
   saveNotes._t=setTimeout(()=>pushGist(),1500);
 }
+function updateReminderBtnState(){
+  const btn=document.getElementById('sheetReminderBtn');
+  if(!btn||sheetIdx===null)return;
+  const val=parseInt(document.getElementById('sheetReminder').value,10)||null;
+  const saved=data.items[sheetIdx].reminderAt||null;
+  const unchanged=val===saved;
+  btn.classList.toggle('faded',unchanged);
+  btn.textContent=unchanged?'Set':'Set';
+}
 function saveReminder(){
   if(sheetIdx===null)return;
   const val=parseInt(document.getElementById('sheetReminder').value,10);
@@ -1084,9 +1184,11 @@ function saveReminder(){
   lsSet(DK,data);
   renderAll();renderSheet();pushGist();
 }
-function sheetToday(){
-  if(sheetIdx===null)return;
-  renderAll();renderSheet();pushGist();
+function updateEntryBtnLabel(){
+  const val=document.getElementById('sheetDate').value;
+  const btn=document.getElementById('sheetEntryBtn');
+  if(!btn)return;
+  btn.textContent=(val===today())?'✓ Did it today':'+ Add entry';
 }
 function sheetAddEntry(){
   if(sheetIdx===null)return;
@@ -1130,7 +1232,7 @@ function renderAddLabels(){
   (data.labels||[]).forEach(l=>{
     const n=l.name||l, c=l.color||null;
     const picked=addSelectedLabel===n;
-    const st=picked&&c?`style="background:${colBg(c)};border-color:${colBorder(c)};color:${darken(c)}"` 
+    const st=picked&&c?`style="background:${darken(c,.6)};border-color:${darken(c,.6)};color:#fff"` 
             :c?`style="border-color:${c}55"` :'';
     h+=`<button class="add-lbl-chip${picked?' picked':''}" ${st} data-lbl="${n.replace(/"/g,'&quot;')}">${n}</button>`;
   });
