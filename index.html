@@ -1055,21 +1055,26 @@ function closeCtxMenu(){
 }
 function ctxDidToday(){
   if(ctxIdx===null)return;
-  data.items[ctxIdx]=addEntry(data.items[ctxIdx],today());
-  closeCtxMenu();renderAll();pushGist();
+  const idx=ctxIdx;
+  closeCtxMenu();
+  data.items[idx]=addEntry(data.items[idx],today());
+  renderAll();pushGist();
 }
 function ctxTogglePin(){
   if(ctxIdx===null)return;
-  data.items[ctxIdx].pinned=!data.items[ctxIdx].pinned;
-  closeCtxMenu();renderAll();pushGist();
+  const idx=ctxIdx;
+  closeCtxMenu();
+  data.items[idx].pinned=!data.items[idx].pinned;
+  renderAll();pushGist();
 }
 async function ctxDelete(){
   if(ctxIdx===null)return;
-  const name=data.items[ctxIdx].name;
+  const idx=ctxIdx; // capture before closeCtxMenu nulls it
+  const name=data.items[idx].name;
   closeCtxMenu();
   const ok=await showConfirm('Delete item',`Remove "${name}" and all its history? This cannot be undone.`);
   if(!ok)return;
-  data.items.splice(ctxIdx,1);
+  data.items.splice(idx,1);
   renderAll();pushGist();
 }
 
