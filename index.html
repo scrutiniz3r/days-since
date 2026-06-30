@@ -446,6 +446,17 @@ button{transition:transform .15s,box-shadow .15s,opacity .15s,background .15s,co
 
     <div class="setting-row">
       <div class="setting-info">
+        <strong>Sort by days ascending</strong>
+        <small>Show items with fewest days since first, when viewing All</small>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="sortToggle" onchange="toggleSortSetting()"/>
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-info">
         <strong>Dark mode</strong>
         <small>Switch to a darker, easier-on-the-eyes theme</small>
       </div>
@@ -561,6 +572,14 @@ button{transition:transform .15s,box-shadow .15s,opacity .15s,background .15s,co
       <textarea id="sheetNotes" class="sheet-notes" rows="1" placeholder="Treat me like your 5th standard rough-book" oninput="saveNotes()"></textarea>
     </div>
     <div class="sheet-sec">
+      <div class="sheet-lbl-sm">Remind me when it reaches</div>
+      <div class="entry-row">
+        <input type="number" class="date-in" id="sheetReminder" placeholder="e.g. 14" min="1"/>
+        <span style="font-size:12px;color:var(--th);align-self:center">days</span>
+        <button class="btn-add" onclick="saveReminder()">Set</button>
+      </div>
+    </div>
+    <div class="sheet-sec">
       <div class="sheet-lbl-sm">Log an entry</div>
       <div class="entry-row">
         <input type="date" class="date-in" id="sheetDate"/>
@@ -597,7 +616,7 @@ let conf=null, data=null, filter='', pin='';
 let deferredInstall=null;
 
 // Pastel palette
-const PALETTE=['#F2C49E','#A8C5DA','#C5D9B0','#D4B8E0','#F5D98A','#F4A8B8','#A8D8C8','#D4B8A0'];
+const PALETTE=['#F2C49E','#A8C5DA','#C5D9B0','#D4B8E0','#F5D98A','#F4A8B8','#A8D8C8','#D4B8A0','#C68A5A','#B89AD8'];
 
 // ── STORAGE ──
 const lsGet=k=>{try{return JSON.parse(localStorage.getItem(k))}catch{return null}};
@@ -651,8 +670,9 @@ function avgInterval(h){
   let t=0;for(let i=1;i<d.length;i++)t+=d[i]-d[i-1];
   return Math.round(t/(d.length-1)/86400000);
 }
-function milestone(days){
+function milestone(days,item){
   if(days===null)return null;
+  if(item&&item.reminderAt&&days===item.reminderAt) return `your reminder at ${days} days`;
   if(days===30)return'1 month';if(days===69)return'69 days';
   if(days>=100&&days%100===0)return days+' days';return null;
 }
@@ -802,6 +822,7 @@ function openSettings(){
   document.getElementById('pinChangeRow').classList.toggle('show',!!(conf&&conf.pinHash));
   document.getElementById('lockNowBtn').style.display=conf&&conf.pinHash?'':'none';
   document.getElementById('darkToggle').checked=localStorage.getItem('dsc_theme')==='dark';
+  document.getElementById('sortToggle').checked=getSortSetting();
 }
 function closeSettings(){document.getElementById('settingsOverlay').classList.remove('on')}
 function closeSettingsOnBg(e){if(e.target===document.getElementById('settingsOverlay'))closeSettings()}
@@ -882,11 +903,18 @@ function renderChips(){
   let h=`<button class="chip${filter===''?' on':''}" data-filter="">All</button>`;
   lbls.forEach(l=>{
     const n=l.name||l,c=l.color||null;
-    const st=filter===n&&c?`style="background:${colBg(c)};border-color:${colBorder(c)};color:${darken(c)}"`:
-              c?`style="border-color:${c}44"`:'';
+    let st='';
+    if(c){
+      if(filter===n){
+        st=`style="background:${colBg(c)};border-color:${colBorder(c)};color:${darken(c)}"`;
+      } else {
+        // show colour even when not selected, for visibility when "All" is active
+        st=`style="background:${colBg(c)};border-color:${colBorder(c)};color:${darken(c)};opacity:.85"`;
+      }
+    }
     h+=`<button class="chip${filter===n?' on':''}" ${st} data-filter="${n.replace(/"/g,'&quot;')}">${n}</button>`;
   });
-  h+=`<button class="chip mgmt" onclick="openLblModal()">⚙ Labels</button>`;
+  h+=`<button class="chip mgmt" onclick="openLblModal()" title="Edit labels">✎</button>`;
   const el=document.getElementById('chips');
   el.innerHTML=h;
   // attach click handlers safely via data attribute
@@ -896,7 +924,16 @@ function renderChips(){
 }
 function renderItems(){
   const el=document.getElementById('items');
-  const list=(data.items||[]).filter(it=>!filter||it.label===filter);
+  let list=(data.items||[]).filter(it=>!filter||it.label===filter);
+  if(getSortSetting()){
+    list=[...list].sort((a,b)=>{
+      const da=daysSince(a.lastDate), db=daysSince(b.lastDate);
+      if(da===null&&db===null)return 0;
+      if(da===null)return 1;
+      if(db===null)return -1;
+      return da-db;
+    });
+  }
   if(!list.length){
     el.innerHTML=`<div class="empty-state"><div class="big">${filter?`Nothing in <em>${filter}</em> yet`:'Nothing tracked <em>yet</em>'}</div><small>${filter?'Add something with this label to see it here.':'Add your first item above to get started.'}</small></div>`;
     return;
@@ -904,7 +941,7 @@ function renderItems(){
   el.innerHTML=list.map(item=>{
     const i=data.items.indexOf(item);
     const days=daysSince(item.lastDate);
-    const ms=milestone(days);
+    const ms=milestone(days,item);
     const lblObj=(data.labels||[]).find(l=>(l.name||l)===item.label);
     const col=lblObj?.color||null;
     const dc=darken(col||'#7A6A56');
@@ -940,7 +977,7 @@ function renderSheet(){
   const item=data.items[sheetIdx];
   const days=daysSince(item.lastDate);
   const avg=avgInterval(item.history);
-  const ms=milestone(days);
+  const ms=milestone(days,item);
   const lblObj=(data.labels||[]).find(l=>(l.name||l)===item.label);
   const col=lblObj?.color||null;
   const dc=darken(col||'#7A6A56');
@@ -972,6 +1009,7 @@ function renderSheet(){
   document.getElementById('sheetMs').innerHTML=ms?`<div class="sheet-ms">🎊 ${ms} milestone — amazing!</div>`:'';
   document.getElementById('sheetDate').value=today();
   document.getElementById('sheetDate').max=today();
+  document.getElementById('sheetReminder').value=item.reminderAt||'';
   const notesEl=document.getElementById('sheetNotes');
   notesEl.value=item.notes||'';
   setTimeout(()=>autoResizeNotes(notesEl),0);
@@ -1038,6 +1076,13 @@ function saveNotes(){
   lsSet(DK,data);
   clearTimeout(saveNotes._t);
   saveNotes._t=setTimeout(()=>pushGist(),1500);
+}
+function saveReminder(){
+  if(sheetIdx===null)return;
+  const val=parseInt(document.getElementById('sheetReminder').value,10);
+  data.items[sheetIdx].reminderAt=(val&&val>0)?val:null;
+  lsSet(DK,data);
+  renderAll();renderSheet();pushGist();
 }
 function sheetToday(){
   if(sheetIdx===null)return;
@@ -1178,7 +1223,7 @@ function checkMilestones(){
   if(typeof Notification==='undefined'||Notification.permission!=='granted')return;
   const nf=lsGet(NK)||{};let ch=false;
   (data.items||[]).forEach(item=>{
-    const d=daysSince(item.lastDate),ms=milestone(d);if(!ms)return;
+    const d=daysSince(item.lastDate),ms=milestone(d,item);if(!ms)return;
     const k=item.name+':'+d;
     if(!nf[k]){new Notification('Days Since',{body:`It's been ${ms} since "${item.name}"!`});nf[k]=true;ch=true;}
   });
@@ -1212,6 +1257,19 @@ document.addEventListener('pointerdown', e=>{
   else if(btn.classList.contains('btn-today')||btn.classList.contains('btn-cta')||btn.classList.contains('add-modal-submit')||btn.classList.contains('greet-continue')) haptic('medium');
   else haptic('light');
 }, {passive:true});
+
+// ── SORT SETTING ──
+function getSortSetting(){
+  const v=localStorage.getItem('dsc_sort_asc');
+  return v===null?true:v==='1'; // default ON
+}
+function setSortSetting(on){
+  localStorage.setItem('dsc_sort_asc',on?'1':'0');
+}
+function toggleSortSetting(){
+  setSortSetting(document.getElementById('sortToggle').checked);
+  renderAll();
+}
 
 // ── EXPORT / IMPORT ──
 function exportData(){
