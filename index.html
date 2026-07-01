@@ -170,8 +170,8 @@ button{transition:transform .15s,box-shadow .15s,opacity .15s,background .15s,co
 .add-modal-input::placeholder{color:var(--th)}
 .add-modal-label-row{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:1.25rem;min-height:32px}
 .add-lbl-chip{padding:5px 12px;font-size:12px;font-weight:500;border:1.5px solid var(--border);border-radius:var(--pill);background:var(--surface);color:var(--ts);cursor:pointer;transition:all .15s;white-space:nowrap}
-.add-lbl-chip.picked{background:#2C2016 !important;color:#FBF7F0 !important;border-color:#2C2016 !important;font-weight:600;box-shadow:0 0 12px 3px rgba(44,32,22,.25);transform:scale(1.1);padding:6px 16px !important;font-size:13px !important}
-[data-theme="dark"] .add-lbl-chip.picked{background:#F0EAE0 !important;color:#141210 !important;border-color:#F0EAE0 !important;box-shadow:0 0 12px 3px rgba(240,234,224,.2)}
+.add-lbl-chip.picked{background:#2C2016 !important;color:#FBF7F0 !important;border-color:#2C2016 !important;font-weight:600}
+[data-theme="dark"] .add-lbl-chip.picked{background:#F0EAE0 !important;color:#141210 !important;border-color:#F0EAE0 !important}
 .add-modal-actions{display:flex;gap:8px;justify-content:flex-end}
 .add-modal-cancel{padding:10px 16px;font-size:14px;font-weight:500;border:1.5px solid var(--border);border-radius:12px;background:transparent;color:var(--ts);cursor:pointer;font-family:var(--sans)}
 .add-modal-cancel:hover{border-color:var(--ts);color:var(--tp);transform:translateY(-1px);box-shadow:var(--shadow)}
@@ -184,7 +184,8 @@ button{transition:transform .15s,box-shadow .15s,opacity .15s,background .15s,co
 .chips{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:1rem}
 .chip{padding:5px 12px;font-size:12px;font-weight:500;border:1.5px solid var(--border);border-radius:var(--pill);background:var(--surface);color:var(--ts);cursor:pointer;transition:all .15s;white-space:nowrap}
 .chip:hover{border-color:var(--amber);color:var(--amber)}
-.chip.on{background:var(--tp);color:var(--bg);border-color:var(--tp)}
+.chip.on{background:var(--tp);color:var(--bg);border-color:var(--tp);transform:scale(1.03);font-weight:600;box-shadow:0 0 10px 2px rgba(44,32,22,.15)}
+[data-theme="dark"] .chip.on{box-shadow:0 0 10px 2px rgba(240,234,224,.12)}
 .chip.mgmt{color:var(--th);border-style:dashed;background:transparent}
 .chip.mgmt:hover{color:var(--ts)}
 
@@ -999,6 +1000,7 @@ function renderItems(){
 // ── TILE TAP / LONG-PRESS ──
 let pressTimer=null, pressedIdx=null, longPressFired=false, pressX=0, pressY=0;
 const LONG_PRESS_MS=300;
+const MOVE_SLOP=8; // pixels of movement allowed before cancelling long press
 
 document.addEventListener('pointerdown',e=>{
   const tile=e.target.closest('.tile');
@@ -1006,22 +1008,37 @@ document.addEventListener('pointerdown',e=>{
   pressedIdx=parseInt(tile.dataset.idx,10);
   pressX=e.clientX; pressY=e.clientY;
   longPressFired=false;
+  clearTimeout(pressTimer);
   pressTimer=setTimeout(()=>{
     longPressFired=true;
     haptic('medium');
     openCtxMenu(pressedIdx, pressX, pressY);
   },LONG_PRESS_MS);
-});
+},{passive:true});
+
 document.addEventListener('pointerup',e=>{
-  const tile=e.target.closest('.tile');
   clearTimeout(pressTimer);
-  if(tile&&!longPressFired&&pressedIdx!==null){
+  if(!longPressFired&&pressedIdx!==null){
     openSheet(pressedIdx);
   }
   pressedIdx=null;
+  longPressFired=false;
 });
-document.addEventListener('pointermove',()=>{ clearTimeout(pressTimer); });
-document.addEventListener('pointercancel',()=>{ clearTimeout(pressTimer); pressedIdx=null; });
+
+document.addEventListener('pointermove',e=>{
+  if(pressedIdx===null)return;
+  const dx=e.clientX-pressX, dy=e.clientY-pressY;
+  if(Math.sqrt(dx*dx+dy*dy)>MOVE_SLOP){
+    clearTimeout(pressTimer);
+    pressedIdx=null;
+  }
+},{passive:true});
+
+document.addEventListener('pointercancel',()=>{
+  clearTimeout(pressTimer);
+  pressedIdx=null;
+  longPressFired=false;
+});
 
 // ── CONTEXT MENU ──
 let ctxIdx=null;
