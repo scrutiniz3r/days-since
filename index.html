@@ -1,4 +1,3 @@
-<!-- v1.42 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,8 +1111,9 @@ async function ctxDelete(){
   renderAll();pushGist();
 }
 
+// ── SHEET ──
+let sheetIdx=null;
 function openSheet(i){
-  sheetIdx=i;
   renderSheet();
   document.getElementById('sheetOverlay').classList.add('on');
 }
