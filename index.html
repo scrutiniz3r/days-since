@@ -211,8 +211,8 @@ button{transition:transform .15s,box-shadow .15s,opacity .15s,background .15s,co
 .tile-pin{position:absolute;top:10px;left:10px;font-size:12px;opacity:.85}
 
 /* ── TILE CONTEXT MENU ── */
-.ctx-overlay{display:none;position:fixed;inset:0;z-index:65}
-.ctx-overlay.on{display:block}
+.ctx-overlay{display:none;position:fixed;inset:0;z-index:65;pointer-events:none}
+.ctx-overlay.on{display:block;pointer-events:auto}
 .ctx-menu{position:fixed;background:var(--surface);border-radius:16px;box-shadow:0 8px 40px rgba(44,32,22,.25),0 2px 8px rgba(44,32,22,.1);border:1px solid var(--border);min-width:200px;overflow:hidden;animation:ctxPop .18s var(--ease) both}
 @keyframes ctxPop{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:scale(1)}}
 .ctx-title{font-family:var(--serif);font-size:15px;font-style:italic;color:var(--amber);padding:12px 16px 8px;border-bottom:1px solid var(--border2);font-weight:600}
@@ -467,6 +467,19 @@ button{transition:transform .15s,box-shadow .15s,opacity .15s,background .15s,co
     <div class="settings-head">
       <h2>Settings <em>&</em> more</h2>
       <button class="settings-close" onclick="closeSettings()">×</button>
+    </div>
+
+    <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:8px">
+      <div class="setting-info">
+        <strong>Quote display duration</strong>
+        <small id="quoteDurLabel">8 seconds</small>
+      </div>
+      <input type="range" id="quoteDurSlider" min="3" max="20" step="1" value="8"
+        style="width:100%;accent-color:var(--amber)"
+        oninput="updateQuoteDur(this.value)" onchange="saveQuoteDur(this.value)"/>
+      <div style="display:flex;justify-content:space-between;width:100%;font-size:11px;color:var(--th)">
+        <span>3s</span><span>20s</span>
+      </div>
     </div>
 
     <div class="setting-row">
@@ -782,7 +795,7 @@ function buildGreeting(){
   document.getElementById('greetText').innerHTML=`<span style="font-size:12px;font-family:var(--sans);font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--th)">${q.law}</span><br><em>${q.title}</em>`;
   document.getElementById('greetSub').textContent='\u201C'+q.quote+'\u201D';
   go('greetScreen');
-  setTimeout(()=>go('mainScreen'),8000);
+  setTimeout(()=>go('mainScreen'),getQuoteDuration());
 }
 
 // ── BOOT ──
@@ -859,6 +872,9 @@ function openSettings(){
   document.getElementById('lockNowBtn').style.display=conf&&conf.pinHash?'':'none';
   document.getElementById('darkToggle').checked=localStorage.getItem('dsc_theme')==='dark';
   document.getElementById('sortToggle').checked=getSortSetting();
+  const qd=parseInt(localStorage.getItem('dsc_quote_dur'),10)||8;
+  document.getElementById('quoteDurSlider').value=qd;
+  document.getElementById('quoteDurLabel').textContent=qd+' seconds';
 }
 function closeSettings(){document.getElementById('settingsOverlay').classList.remove('on')}
 function closeSettingsOnBg(e){if(e.target===document.getElementById('settingsOverlay'))closeSettings()}
@@ -1407,9 +1423,12 @@ document.addEventListener('pointerdown', e=>{
 }, {passive:true});
 
 // ── SORT SETTING ──
+function getQuoteDuration(){ return(parseInt(localStorage.getItem('dsc_quote_dur'),10)||8)*1000; }
+function updateQuoteDur(v){ document.getElementById('quoteDurLabel').textContent=v+' seconds'; }
+function saveQuoteDur(v){ localStorage.setItem('dsc_quote_dur',v); updateQuoteDur(v); }
 function getSortSetting(){
   const v=localStorage.getItem('dsc_sort_asc');
-  return v===null?true:v==='1'; // default ON
+  return v===null?true:v==='1';
 }
 function setSortSetting(on){
   localStorage.setItem('dsc_sort_asc',on?'1':'0');
