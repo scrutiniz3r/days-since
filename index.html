@@ -1035,6 +1035,7 @@ document.addEventListener('pointerdown',e=>{
 document.addEventListener('pointerup',e=>{
   clearTimeout(pressTimer);
   if(!longPressFired&&pressedIdx!==null){
+    e.stopPropagation();
     openSheet(pressedIdx);
   }
   pressedIdx=null;
@@ -1113,16 +1114,22 @@ async function ctxDelete(){
 
 // ── SHEET ──
 let sheetIdx=null;
+let sheetOpenedAt=0;
 function openSheet(i){
   sheetIdx=i;
   renderSheet();
+  sheetOpenedAt=Date.now();
   document.getElementById('sheetOverlay').classList.add('on');
 }
 function closeSheet(){
   document.getElementById('sheetOverlay').classList.remove('on');
   sheetIdx=null;
 }
-function closeSheetOnBg(e){if(e.target===document.getElementById('sheetOverlay'))closeSheet()}
+function closeSheetOnBg(e){
+  if(e.target!==document.getElementById('sheetOverlay'))return;
+  if(Date.now()-sheetOpenedAt<350)return; // ignore if just opened
+  closeSheet();
+}
 
 function renderSheet(){
   if(sheetIdx===null)return;
