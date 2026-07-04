@@ -847,6 +847,7 @@ function boot(){
     buildGreeting();
     renderAll();checkNotifBar();pullGist();
     syncSettingToggles();
+    loadSecrets();
   }
 }
 
@@ -872,7 +873,7 @@ function doSetup(){
   conf={gistId:g,token:t,pinHash:usePIN?hash(p):null};
   lsSet(CK,conf);
   data=defData();lsSet(DK,data);
-  buildGreeting();renderAll();checkNotifBar();pushGist();
+  buildGreeting();renderAll();checkNotifBar();pushGist();loadSecrets();
 }
 
 // ── PIN LOGIN ──
@@ -892,7 +893,7 @@ function checkPin(){
   data=lsGet(DK)||defData();
   data.items=(data.items||[]).map(norm);
   data.labels=normLabels(data.labels);
-  buildGreeting();renderAll();checkNotifBar();pullGist();syncSettingToggles();
+  buildGreeting();renderAll();checkNotifBar();pullGist();syncSettingToggles();loadSecrets();
 }
 function lockApp(){
   if(!conf||!conf.pinHash){closeSettings();return}
@@ -1471,6 +1472,19 @@ document.addEventListener('pointerdown', e=>{
 // ── VOICE + NLP PIPELINE ──
 const HF_MODEL = 'scrutiniz3r/days-since-intent';
 const HF_API   = `https://api-inference.huggingface.co/models/${HF_MODEL}`;
+let HF_TOKEN = '';
+
+async function loadSecrets(){
+  try{
+    const r = await fetch('https://api.github.com/gists/5f1869f76fac5c708500f7ea14750554',{
+      headers:{ Authorization:`token ${conf.token}`, Accept:'application/vnd.github.v3+json' }
+    });
+    if(!r.ok) return;
+    const j = await r.json();
+    const content = j.files['secrets.json']?.content;
+    if(content) HF_TOKEN = JSON.parse(content).hf_token || '';
+  } catch(e){ console.log('Could not load secrets:', e); }
+}
 
 let recognition = null;
 let voiceParsed  = null; // { intent, activity, days_ago }
@@ -1540,12 +1554,29 @@ function toggleListening(){
 async function processVoice(text){
   try{
     // 1. Classify intent via HF API
+    const headers = { 'Content-Type': 'application/json' };
+    if(HF_TOKEN) headers['Authorization'] = `Bearer ${HF_TOKEN}`;
+
     const res = await fetch(HF_API, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({ inputs: text })
     });
+
+    if(!res.ok){
+      const errText = await res.text();
+      console.error('HF API error:', res.status, errText);
+      // Model may be loading — retry after 10s
+      if(res.status === 503){
+        document.getElementById('voiceStatus').textContent = 'Model is loading, retrying in 10s…';
+        setTimeout(()=>processVoice(text), 10000);
+        return;
+      }
+      throw new Error(`HTTP ${res.status}`);
+    }
+
     const json = await res.json();
+    console.log('HF response:', json);
 
     // HF returns array of arrays — take top result
     const top = Array.isArray(json[0]) ? json[0][0] : json[0];
