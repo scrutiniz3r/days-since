@@ -158,6 +158,26 @@ button{transition:transform .15s,box-shadow .15s,opacity .15s,background .15s,co
 .fab{position:fixed;bottom:1.75rem;right:1.75rem;width:68px;height:68px;border-radius:50%;background:var(--tp);color:var(--bg);border:none;font-size:36px;font-weight:300;cursor:pointer;box-shadow:0 6px 24px rgba(44,32,22,.3);display:flex;align-items:center;justify-content:center;z-index:20;line-height:1}
 .fab:hover{transform:translateY(-3px);box-shadow:0 10px 32px rgba(44,32,22,.4)}
 .fab:active{transform:scale(.93)}
+.fab-mic{bottom:1.75rem;right:7rem;background:var(--amber);font-size:26px}
+.fab-mic.listening{background:var(--rose);animation:micPulse 1s ease-in-out infinite}
+@keyframes micPulse{0%,100%{box-shadow:0 6px 24px rgba(44,32,22,.3)}50%{box-shadow:0 6px 32px rgba(200,88,74,.6)}}
+
+/* ── VOICE MODAL ── */
+.voice-overlay{display:none;position:fixed;inset:0;background:rgba(44,32,22,.5);z-index:70;align-items:center;justify-content:center;padding:1.5rem;backdrop-filter:blur(4px)}
+.voice-overlay.on{display:flex}
+.voice-modal{background:var(--surface);border-radius:24px;padding:2rem;width:100%;max-width:380px;box-shadow:var(--shadow-lg);text-align:center}
+.voice-title{font-family:var(--serif);font-size:22px;font-weight:300;color:var(--tp);margin-bottom:.5rem}
+.voice-title em{font-style:italic;color:var(--amber)}
+.voice-status{font-size:13px;color:var(--ts);margin-bottom:1.5rem;min-height:20px}
+.voice-transcript{font-size:16px;color:var(--tp);font-style:italic;min-height:28px;margin-bottom:1rem;padding:0 .5rem;line-height:1.5}
+.voice-result{font-size:13px;color:var(--ts);margin-bottom:1.5rem;min-height:18px;padding:8px 12px;background:var(--surface2);border-radius:10px;display:none}
+.voice-result.show{display:block}
+.voice-mic-btn{width:72px;height:72px;border-radius:50%;background:var(--amber);color:#fff;border:none;font-size:30px;cursor:pointer;margin:0 auto 1.25rem;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(196,120,58,.35)}
+.voice-mic-btn.listening{background:var(--rose);animation:micPulse 1s ease-in-out infinite}
+.voice-actions{display:flex;gap:8px;justify-content:center}
+.voice-confirm{padding:10px 20px;font-size:14px;font-weight:600;background:var(--tp);color:var(--bg);border:none;border-radius:12px;cursor:pointer;display:none}
+.voice-confirm.show{display:block}
+.voice-cancel{padding:10px 16px;font-size:14px;font-weight:500;background:transparent;color:var(--ts);border:1.5px solid var(--border);border-radius:12px;cursor:pointer}
 
 /* ── ADD MODAL ── */
 .add-overlay{display:none;position:fixed;inset:0;background:rgba(44,32,22,.4);z-index:70;align-items:center;justify-content:center;padding:1.5rem;backdrop-filter:blur(3px)}
@@ -441,6 +461,23 @@ button{transition:transform .15s,box-shadow .15s,opacity .15s,background .15s,co
 
   <!-- floating + bubble -->
   <button class="fab" onclick="openAddModal()" aria-label="Add new item">+</button>
+  <!-- mic bubble -->
+  <button class="fab fab-mic" id="micFab" onclick="openVoiceModal()" aria-label="Log with voice">🎙</button>
+</div>
+
+<!-- ── VOICE MODAL ── -->
+<div class="voice-overlay" id="voiceOverlay">
+  <div class="voice-modal">
+    <div class="voice-title">Log with <em>voice</em></div>
+    <div class="voice-status" id="voiceStatus">Tap the mic and speak</div>
+    <div class="voice-transcript" id="voiceTranscript"></div>
+    <div class="voice-result" id="voiceResult"></div>
+    <button class="voice-mic-btn" id="voiceMicBtn" onclick="toggleListening()">🎙</button>
+    <div class="voice-actions">
+      <button class="voice-confirm" id="voiceConfirm" onclick="confirmVoiceLog()">Log it →</button>
+      <button class="voice-cancel" onclick="closeVoiceModal()">Cancel</button>
+    </div>
+  </div>
 </div>
 
 <!-- ── ADD MODAL ── -->
@@ -1431,7 +1468,207 @@ document.addEventListener('pointerdown', e=>{
   else haptic('light');
 }, {passive:true});
 
-// ── SORT SETTING ──
+// ── VOICE + NLP PIPELINE ──
+const HF_MODEL = 'scrutiniz3r/days-since-intent';
+const HF_API   = `https://api-inference.huggingface.co/models/${HF_MODEL}`;
+
+let recognition = null;
+let voiceParsed  = null; // { intent, activity, days_ago }
+
+function openVoiceModal(){
+  voiceParsed = null;
+  document.getElementById('voiceStatus').textContent = 'Tap the mic and speak';
+  document.getElementById('voiceTranscript').textContent = '';
+  document.getElementById('voiceResult').classList.remove('show');
+  document.getElementById('voiceResult').textContent = '';
+  document.getElementById('voiceConfirm').classList.remove('show');
+  document.getElementById('voiceMicBtn').classList.remove('listening');
+  document.getElementById('voiceOverlay').classList.add('on');
+}
+function closeVoiceModal(){
+  if(recognition) try{ recognition.stop(); }catch(e){}
+  document.getElementById('voiceOverlay').classList.remove('on');
+  document.getElementById('voiceMicBtn').classList.remove('listening');
+}
+
+function toggleListening(){
+  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SpeechRec){
+    document.getElementById('voiceStatus').textContent = 'Voice not supported in this browser. Try Chrome.';
+    return;
+  }
+  if(recognition){
+    try{ recognition.stop(); }catch(e){}
+    recognition = null;
+    document.getElementById('voiceMicBtn').classList.remove('listening');
+    document.getElementById('voiceStatus').textContent = 'Tap the mic and speak';
+    return;
+  }
+  recognition = new SpeechRec();
+  recognition.lang = 'en-US';
+  recognition.interimResults = true;
+  recognition.maxAlternatives = 1;
+
+  document.getElementById('voiceMicBtn').classList.add('listening');
+  document.getElementById('voiceStatus').textContent = 'Listening…';
+  document.getElementById('voiceTranscript').textContent = '';
+  document.getElementById('voiceResult').classList.remove('show');
+  document.getElementById('voiceConfirm').classList.remove('show');
+
+  recognition.onresult = e => {
+    const transcript = Array.from(e.results).map(r => r[0].transcript).join('');
+    document.getElementById('voiceTranscript').textContent = `"${transcript}"`;
+    if(e.results[e.results.length-1].isFinal){
+      recognition = null;
+      document.getElementById('voiceMicBtn').classList.remove('listening');
+      document.getElementById('voiceStatus').textContent = 'Processing…';
+      processVoice(transcript);
+    }
+  };
+  recognition.onerror = e => {
+    recognition = null;
+    document.getElementById('voiceMicBtn').classList.remove('listening');
+    document.getElementById('voiceStatus').textContent = `Error: ${e.error}. Try again.`;
+  };
+  recognition.onend = () => {
+    recognition = null;
+    document.getElementById('voiceMicBtn').classList.remove('listening');
+  };
+  recognition.start();
+}
+
+async function processVoice(text){
+  try{
+    // 1. Classify intent via HF API
+    const res = await fetch(HF_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ inputs: text })
+    });
+    const json = await res.json();
+
+    // HF returns array of arrays — take top result
+    const top = Array.isArray(json[0]) ? json[0][0] : json[0];
+    const intent = top.label;
+    const score  = (top.score * 100).toFixed(0);
+
+    if(intent === 'unclear' || top.score < 0.5){
+      document.getElementById('voiceStatus').textContent = `Not sure what you mean (${score}% confidence). Try again.`;
+      return;
+    }
+
+    // 2. Extract entities (JS port of Python rules)
+    const entities = extractEntities(text);
+    voiceParsed = { intent, ...entities };
+
+    // 3. Show result
+    let msg = '';
+    if(intent === 'log_entry'){
+      const dayStr = entities.days_ago === 0 ? 'today' :
+                     entities.days_ago === 1 ? 'yesterday' :
+                     `${entities.days_ago} days ago`;
+      msg = `📋 Log "${entities.activity}" — ${dayStr}`;
+    } else if(intent === 'new_activity'){
+      msg = `➕ Create new activity "${entities.activity}"`;
+    } else if(intent === 'assign_label'){
+      msg = `🏷 Label "${entities.activity}" as "${entities.label}"`;
+    }
+
+    document.getElementById('voiceStatus').textContent = `${score}% confident`;
+    document.getElementById('voiceResult').textContent = msg;
+    document.getElementById('voiceResult').classList.add('show');
+    document.getElementById('voiceConfirm').classList.add('show');
+    haptic('success');
+
+  } catch(e){
+    console.error(e);
+    document.getElementById('voiceStatus').textContent = 'Could not reach the model. Check connection.';
+  }
+}
+
+function extractEntities(text){
+  const t = text.toLowerCase();
+
+  // days_ago extraction
+  const daysAgoMatch = t.match(/(\d+)\s+days?\s+(ago|back)/);
+  const weeksMatch   = t.match(/(\d+)\s+weeks?\s+ago/);
+  let days_ago = 0;
+  if(/\btoday\b|\bthis morning\b|\bthis evening\b/.test(t))       days_ago = 0;
+  else if(/\byesterday\b|\blast night\b/.test(t))                  days_ago = 1;
+  else if(daysAgoMatch)                                            days_ago = parseInt(daysAgoMatch[1]);
+  else if(weeksMatch)                                              days_ago = parseInt(weeksMatch[1]) * 7;
+  else if(/\blast week\b|\ba week ago\b/.test(t))                  days_ago = 7;
+  else if(/\blast month\b|\ba month ago\b/.test(t))                days_ago = 30;
+
+  // activity extraction — strip verbs, time words, prepositions
+  const STRIP = [
+    /\b(i\s+)?(did|played|went|had|finished|practiced|visited|called|cooked|bought|read|watched|biked|ran|hiked|swam|logged|attended|completed|took|made|cleaned|studied|wrote|spent|hit)\b/gi,
+    /\b(today|yesterday|this\s+morning|this\s+evening|this\s+afternoon|last\s+night)\b/gi,
+    /\b\d+\s+days?\s+(ago|back)\b/gi,
+    /\b\d+\s+weeks?\s+ago\b/gi,
+    /\b(a\s+week|last\s+week|a\s+month|last\s+month)\s*(ago)?\b/gi,
+    /\b(last\s+)?(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/gi,
+    /\b(for|an|a)\s+(hour|while|bit|session|few\s+hours?|couple\s+of)\b/gi,
+    /\b(this\s+)?(morning|evening|afternoon)\b/gi,
+    /\bwith\b.*/gi,
+    /\bjust\b|\bsome\b|\bmy\b|\bto\b|\bthe\b|\ba\b|\ban\b/gi,
+  ];
+  let activity = text;
+  STRIP.forEach(p => { activity = activity.replace(p, ' '); });
+  activity = activity.replace(/\s+/g, ' ').trim().replace(/^[,.\s]+|[,.\s]+$/g, '');
+  activity = activity.split(' ').map(w => w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
+  if(!activity) activity = 'Unknown';
+
+  // label extraction for assign_label
+  const labelMatch = text.match(/(?:under|as|label|is|part of|in|tagged?(?:\s+as)?)\s+([a-zA-Z]+)\s*$/i);
+  const label = labelMatch ? labelMatch[1] : null;
+
+  return { activity, days_ago, label };
+}
+
+function confirmVoiceLog(){
+  if(!voiceParsed) return;
+  const { intent, activity, days_ago, label } = voiceParsed;
+
+  if(intent === 'log_entry'){
+    // Find best matching existing item
+    const match = data.items.find(it =>
+      it.name.toLowerCase() === activity.toLowerCase() ||
+      it.name.toLowerCase().includes(activity.toLowerCase()) ||
+      activity.toLowerCase().includes(it.name.toLowerCase())
+    );
+    if(match){
+      const dk = (() => {
+        const d = new Date(); d.setDate(d.getDate() - days_ago);
+        return localDate(d);
+      })();
+      data.items[data.items.indexOf(match)] = addEntry(match, dk);
+      lsSet(DK, data); renderAll(); pushGist();
+      closeVoiceModal();
+      haptic('success');
+    } else {
+      // Create new item and log it
+      const dk = (() => {
+        const d = new Date(); d.setDate(d.getDate() - days_ago);
+        return localDate(d);
+      })();
+      const newItem = norm({ name: activity, label: '', lastDate: null, history: [] });
+      newItem.history = [dk]; newItem.lastDate = dk;
+      data.items.push(newItem);
+      lsSet(DK, data); renderAll(); pushGist();
+      closeVoiceModal();
+      haptic('success');
+    }
+  } else if(intent === 'new_activity'){
+    data.items.push(norm({ name: activity, label: '', lastDate: null, history: [] }));
+    lsSet(DK, data); renderAll(); pushGist();
+    closeVoiceModal();
+  } else if(intent === 'assign_label' && label){
+    const match = data.items.find(it => it.name.toLowerCase().includes(activity.toLowerCase()));
+    if(match){ match.label = label; lsSet(DK, data); renderAll(); pushGist(); }
+    closeVoiceModal();
+  }
+}
 function getQuoteDuration(){ return(parseInt(localStorage.getItem('dsc_quote_dur'),10)||8)*1000; }
 function updateQuoteDur(v){ document.getElementById('quoteDurLabel').textContent=v+' seconds'; }
 function saveQuoteDur(v){ localStorage.setItem('dsc_quote_dur',v); updateQuoteDur(v); }
