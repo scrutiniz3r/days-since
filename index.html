@@ -1472,19 +1472,9 @@ document.addEventListener('pointerdown', e=>{
 // ── VOICE + NLP PIPELINE ──
 const HF_MODEL = 'scrutiniz3r/days-since-intent';
 const HF_API   = `https://api-inference.huggingface.co/models/${HF_MODEL}`;
-let HF_TOKEN = '';
+let HF_TOKEN = ''; // public model — no token needed
 
-async function loadSecrets(){
-  try{
-    const r = await fetch('https://api.github.com/gists/5f1869f76fac5c708500f7ea14750554',{
-      headers:{ Authorization:`token ${conf.token}`, Accept:'application/vnd.github.v3+json' }
-    });
-    if(!r.ok) return;
-    const j = await r.json();
-    const content = j.files['secrets.json']?.content;
-    if(content) HF_TOKEN = JSON.parse(content).hf_token || '';
-  } catch(e){ console.log('Could not load secrets:', e); }
-}
+async function loadSecrets(){ /* no-op — model is public */ }
 
 let recognition = null;
 let voiceParsed  = null; // { intent, activity, days_ago }
@@ -1551,9 +1541,10 @@ function toggleListening(){
   recognition.start();
 }
 
-async function processVoice(text){
+async function processVoice(text, attempt=1){
   try{
-    // 1. Classify intent via HF API
+    document.getElementById('voiceStatus').textContent = attempt > 1 ? `Retrying… (attempt ${attempt}/3)` : 'Processing…';
+
     const headers = { 'Content-Type': 'application/json' };
     if(HF_TOKEN) headers['Authorization'] = `Bearer ${HF_TOKEN}`;
 
@@ -1563,15 +1554,23 @@ async function processVoice(text){
       body: JSON.stringify({ inputs: text })
     });
 
-    if(!res.ok){
-      const errText = await res.text();
-      console.error('HF API error:', res.status, errText);
-      // Model may be loading — retry after 10s
-      if(res.status === 503){
-        document.getElementById('voiceStatus').textContent = 'Model is loading, retrying in 10s…';
-        setTimeout(()=>processVoice(text), 10000);
+    // Cold start — model sleeping on free tier, retry with countdown
+    if(res.status === 503){
+      if(attempt <= 3){
+        let secs = 15;
+        const tick = setInterval(()=>{
+          secs--;
+          document.getElementById('voiceStatus').textContent = `Model warming up… retrying in ${secs}s`;
+          if(secs <= 0){ clearInterval(tick); processVoice(text, attempt+1); }
+        }, 1000);
         return;
       }
+      document.getElementById('voiceStatus').textContent = 'Model timed out. Try again in a minute.';
+      return;
+    }
+
+    if(!res.ok){
+      console.error('HF API error:', res.status, await res.text());
       throw new Error(`HTTP ${res.status}`);
     }
 
