@@ -1471,10 +1471,38 @@ document.addEventListener('pointerdown', e=>{
 
 // ── VOICE + NLP PIPELINE ──
 const HF_MODEL = 'scrutiniz3r/days-since-intent';
-const HF_API   = `https://api-inference.huggingface.co/models/${HF_MODEL}`;
-let HF_TOKEN = ''; // public model — no token needed
+let HF_TOKEN = '';
 
-async function loadSecrets(){ /* no-op — model is public */ }
+async function loadSecrets(){
+  try{
+    const r = await fetch('https://api.github.com/gists/5f1869f76fac5c708500f7ea14750554',{
+      headers:{ Authorization:`token ${conf.token}`, Accept:'application/vnd.github.v3+json' }
+    });
+    if(!r.ok){ console.log('Secrets gist fetch failed:', r.status); return; }
+    const j = await r.json();
+    const content = j.files['secrets.json']?.content;
+    if(content){ HF_TOKEN = JSON.parse(content).hf_token || ''; console.log('HF token loaded:', HF_TOKEN ? 'YES' : 'NO'); }
+  } catch(e){ console.log('Could not load secrets:', e); }
+}
+
+async function callHFClassifier(text){
+  // Use huggingface.js inference client (works with new router endpoint)
+  const url = `https://router.huggingface.co/hf-inference/models/${HF_MODEL}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${HF_TOKEN}`
+    },
+    body: JSON.stringify({ inputs: text })
+  });
+  console.log('HF status:', res.status);
+  if(res.status === 503) throw new Error('503');
+  if(!res.ok) throw new Error(`HTTP ${res.status}`);
+  const json = await res.json();
+  console.log('HF response:', json);
+  return json;
+}
 
 let recognition = null;
 let voiceParsed  = null; // { intent, activity, days_ago }
@@ -1545,19 +1573,12 @@ async function processVoice(text, attempt=1){
   try{
     document.getElementById('voiceStatus').textContent = attempt > 1 ? `Retrying… (attempt ${attempt}/3)` : 'Processing…';
 
-    const headers = { 'Content-Type': 'application/json' };
-    if(HF_TOKEN) headers['Authorization'] = `Bearer ${HF_TOKEN}`;
-
-    const res = await fetch(HF_API, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ inputs: text })
-    });
-
-    // Cold start — model sleeping on free tier, retry with countdown
-    if(res.status === 503){
-      if(attempt <= 3){
-        let secs = 15;
+    let json;
+    try{
+      json = await callHFClassifier(text);
+    } catch(e){
+      if(e.message === '503' && attempt <= 3){
+        let secs = 20;
         const tick = setInterval(()=>{
           secs--;
           document.getElementById('voiceStatus').textContent = `Model warming up… retrying in ${secs}s`;
@@ -1565,17 +1586,9 @@ async function processVoice(text, attempt=1){
         }, 1000);
         return;
       }
-      document.getElementById('voiceStatus').textContent = 'Model timed out. Try again in a minute.';
-      return;
+      if(e.message === '503'){ document.getElementById('voiceStatus').textContent = 'Model timed out. Try again in a minute.'; return; }
+      throw e;
     }
-
-    if(!res.ok){
-      console.error('HF API error:', res.status, await res.text());
-      throw new Error(`HTTP ${res.status}`);
-    }
-
-    const json = await res.json();
-    console.log('HF response:', json);
 
     // HF returns array of arrays — take top result
     const top = Array.isArray(json[0]) ? json[0][0] : json[0];
