@@ -1492,8 +1492,7 @@ function loadSecrets(){
 }
 
 async function callHFClassifier(text){
-  // Use huggingface.js inference client (works with new router endpoint)
-  const url = `https://router.huggingface.co/hf-inference/models/${HF_MODEL}`;
+  const url = `https://api-inference.huggingface.co/models/${HF_MODEL}`;
   const res = await fetch(url, {
     method: 'POST',
     headers: {
