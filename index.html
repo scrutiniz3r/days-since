@@ -174,10 +174,14 @@ button{transition:transform .15s,box-shadow .15s,opacity .15s,background .15s,co
 .voice-result.show{display:block}
 .voice-mic-btn{width:72px;height:72px;border-radius:50%;background:var(--amber);color:#fff;border:none;font-size:30px;cursor:pointer;margin:0 auto 1.25rem;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(196,120,58,.35)}
 .voice-mic-btn.listening{background:var(--rose);animation:micPulse 1s ease-in-out infinite}
-.voice-actions{display:flex;gap:8px;justify-content:center}
-.voice-confirm{padding:10px 20px;font-size:14px;font-weight:600;background:var(--tp);color:var(--bg);border:none;border-radius:12px;cursor:pointer;display:none}
-.voice-confirm.show{display:block}
-.voice-cancel{padding:10px 16px;font-size:14px;font-weight:500;background:transparent;color:var(--ts);border:1.5px solid var(--border);border-radius:12px;cursor:pointer}
+.voice-actions{display:flex;gap:8px;justify-content:center;width:100%}
+.voice-text-row{display:flex;gap:8px;margin-bottom:1.25rem;width:100%}
+.voice-text-input{flex:1;padding:10px 14px;font-size:14px;border:1.5px solid var(--border);border-radius:12px;background:var(--bg);color:var(--tp);outline:none;font-family:var(--sans);transition:border-color .15s}
+.voice-text-input:focus{border-color:var(--amber)}
+.voice-text-input::placeholder{color:var(--th);font-size:12px}
+.voice-text-btn{padding:10px 16px;font-size:16px;font-weight:600;background:var(--amber);color:#fff;border:none;border-radius:12px;cursor:pointer}
+.voice-confirm{padding:12px 24px;font-size:14px;font-weight:600;background:var(--tp);color:var(--bg);border:none;border-radius:12px;cursor:pointer;display:none;flex:1;font-family:var(--sans)}
+.voice-confirm.show{display:block}.voice-confirm:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(44,32,22,.2)}.voice-confirm:active{transform:scale(.97)}.voice-cancel{padding:12px 16px;font-size:14px;font-weight:500;background:transparent;color:var(--ts);border:1.5px solid var(--border);border-radius:12px;cursor:pointer;font-family:var(--sans)}.voice-cancel:hover{border-color:var(--ts);color:var(--tp)}
 
 /* ── ADD MODAL ── */
 .add-overlay{display:none;position:fixed;inset:0;background:rgba(44,32,22,.4);z-index:70;align-items:center;justify-content:center;padding:1.5rem;backdrop-filter:blur(3px)}
@@ -469,10 +473,15 @@ button{transition:transform .15s,box-shadow .15s,opacity .15s,background .15s,co
 <div class="voice-overlay" id="voiceOverlay">
   <div class="voice-modal">
     <div class="voice-title">Log with <em>voice</em></div>
-    <div class="voice-status" id="voiceStatus">Tap the mic and speak</div>
+    <div class="voice-status" id="voiceStatus">Tap the mic or type below</div>
     <div class="voice-transcript" id="voiceTranscript"></div>
     <div class="voice-result" id="voiceResult"></div>
     <button class="voice-mic-btn" id="voiceMicBtn" onclick="toggleListening()">🎙</button>
+    <div class="voice-text-row">
+      <input type="text" id="voiceTextInput" class="voice-text-input" placeholder="or type here… e.g. I did football 5 days ago"
+        onkeydown="if(event.key==='Enter')submitVoiceText()"/>
+      <button class="voice-text-btn" onclick="submitVoiceText()">→</button>
+    </div>
     <div class="voice-actions">
       <button class="voice-confirm" id="voiceConfirm" onclick="confirmVoiceLog()">Log it →</button>
       <button class="voice-cancel" onclick="closeVoiceModal()">Cancel</button>
@@ -1508,13 +1517,21 @@ let voiceParsed  = null; // { intent, activity, days_ago }
 
 function openVoiceModal(){
   voiceParsed = null;
-  document.getElementById('voiceStatus').textContent = 'Tap the mic and speak';
+  document.getElementById('voiceStatus').textContent = 'Tap the mic or type below';
   document.getElementById('voiceTranscript').textContent = '';
   document.getElementById('voiceResult').classList.remove('show');
   document.getElementById('voiceResult').textContent = '';
   document.getElementById('voiceConfirm').classList.remove('show');
   document.getElementById('voiceMicBtn').classList.remove('listening');
+  document.getElementById('voiceTextInput').value = '';
   document.getElementById('voiceOverlay').classList.add('on');
+}
+function submitVoiceText(){
+  const val = document.getElementById('voiceTextInput').value.trim();
+  if(!val) return;
+  document.getElementById('voiceTranscript').textContent = `"${val}"`;
+  document.getElementById('voiceTextInput').value = '';
+  processVoice(val);
 }
 function closeVoiceModal(){
   if(recognition) try{ recognition.stop(); }catch(e){}
