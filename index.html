@@ -1484,29 +1484,81 @@ document.addEventListener('pointerdown', e=>{
 }, {passive:true});
 
 // ── VOICE + NLP PIPELINE ──
+// ── ONNX INFERENCE ──
 const HF_MODEL = 'scrutiniz3r/days-since-intent';
+const ONNX_URL = `https://huggingface.co/${HF_MODEL}/resolve/main/model.onnx`;
+const VOCAB_URL = `https://huggingface.co/${HF_MODEL}/resolve/main/tokenizer.json`;
 let HF_TOKEN = '';
+let onnxSession = null;
+let vocab = null;
+const LABELS = ["log_entry", "new_activity", "assign_label", "unclear"];
 
 function loadSecrets(){
   HF_TOKEN = localStorage.getItem('dsc_hf_token') || '';
 }
 
+async function loadONNX(){
+  if(onnxSession && vocab) return; // already loaded
+  document.getElementById('voiceStatus').textContent = 'Loading model… (first time only)';
+  try{
+    // Load vocab
+    const vRes = await fetch(VOCAB_URL);
+    const vJson = await vRes.json();
+    vocab = vJson.model.vocab; // token → id map
+
+    // Load ONNX session
+    onnxSession = await ort.InferenceSession.create(ONNX_URL, {
+      executionProviders: ['wasm']
+    });
+    console.log('ONNX model loaded');
+  } catch(e){
+    console.error('Failed to load ONNX:', e);
+    throw e;
+  }
+}
+
+function tokenize(text, maxLen=64){
+  // Simple whitespace + punctuation tokenizer matching DistilBERT WordPiece
+  const CLS=101, SEP=102, PAD=0, UNK=100;
+  const clean = text.toLowerCase().replace(/[^a-z0-9\s]/g,' ').trim();
+  const words = clean.split(/\s+/).filter(Boolean);
+
+  let ids = [CLS];
+  for(const word of words){
+    const wid = vocab['##'+word] || vocab[word];
+    if(wid !== undefined){
+      ids.push(wid);
+    } else {
+      // character-level fallback
+      ids.push(UNK);
+    }
+    if(ids.length >= maxLen - 1) break;
+  }
+  ids.push(SEP);
+
+  const mask = new Array(ids.length).fill(1);
+  while(ids.length < maxLen){ ids.push(PAD); mask.push(0); }
+
+  return {
+    input_ids: new ort.Tensor('int64', BigInt64Array.from(ids.map(BigInt)), [1, maxLen]),
+    attention_mask: new ort.Tensor('int64', BigInt64Array.from(mask.map(BigInt)), [1, maxLen])
+  };
+}
+
 async function callHFClassifier(text){
-  const url = `https://api-inference.huggingface.co/models/${HF_MODEL}`;
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${HF_TOKEN}`
-    },
-    body: JSON.stringify({ inputs: text })
-  });
-  console.log('HF status:', res.status);
-  if(res.status === 503) throw new Error('503');
-  if(!res.ok) throw new Error(`HTTP ${res.status}`);
-  const json = await res.json();
-  console.log('HF response:', json);
-  return json;
+  await loadONNX();
+  const feeds = tokenize(text);
+  const results = await onnxSession.run(feeds);
+  const logits = results.logits.data;
+
+  // Softmax
+  const max = Math.max(...logits);
+  const exps = Array.from(logits).map(x => Math.exp(x - max));
+  const sum = exps.reduce((a,b) => a+b, 0);
+  const probs = exps.map(x => x/sum);
+
+  const topIdx = probs.indexOf(Math.max(...probs));
+  return [{ label: LABELS[topIdx], score: probs[topIdx] }];
 }
 
 let recognition = null;
@@ -1574,25 +1626,16 @@ function toggleListening(){
   recognition.start();
 }
 
-async function processVoice(text, attempt=1){
+async function processVoice(text){
   try{
-    document.getElementById('voiceStatus').textContent = attempt > 1 ? `Retrying… (attempt ${attempt}/3)` : 'Processing…';
-
+    document.getElementById('voiceStatus').textContent = 'Processing…';
     let json;
     try{
       json = await callHFClassifier(text);
     } catch(e){
-      if(e.message === '503' && attempt <= 3){
-        let secs = 20;
-        const tick = setInterval(()=>{
-          secs--;
-          document.getElementById('voiceStatus').textContent = `Model warming up… retrying in ${secs}s`;
-          if(secs <= 0){ clearInterval(tick); processVoice(text, attempt+1); }
-        }, 1000);
-        return;
-      }
-      if(e.message === '503'){ document.getElementById('voiceStatus').textContent = 'Model timed out. Try again in a minute.'; return; }
-      throw e;
+      console.error('Classifier error:', e);
+      document.getElementById('voiceStatus').textContent = 'Could not run model. Try again.';
+      return;
     }
 
     // HF returns array of arrays — take top result
@@ -1831,7 +1874,8 @@ function initTheme(){
 
 boot();
 </script>
-<!-- ── CONFIRM MODAL ── -->
+<!-- ONNX Runtime Web -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/onnxruntime-web/1.17.1/ort.min.js"></script>
 <div class="add-overlay" id="confirmOverlay">
   <div class="add-modal" style="max-width:340px">
     <div class="add-modal-title" id="confirmTitle">Are you sure?</div>
