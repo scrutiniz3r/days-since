@@ -566,6 +566,18 @@ button{transition:transform .15s,box-shadow .15s,opacity .15s,background .15s,co
       <button class="tb-btn" onclick="lockApp()" id="lockNowBtn">🔒 Lock</button>
     </div>
 
+    <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:8px">
+      <div class="setting-info">
+        <strong>Hugging Face token</strong>
+        <small>Required for voice logging. Stored locally only — never sent anywhere except HuggingFace.</small>
+      </div>
+      <div style="display:flex;gap:8px;width:100%">
+        <input type="password" id="hfTokenInput" placeholder="hf_..." style="flex:1;padding:8px 12px;font-size:13px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);color:var(--tp);font-family:var(--sans);outline:none"/>
+        <button onclick="saveHFToken()" style="padding:8px 14px;font-size:13px;font-weight:600;background:var(--amber);color:#fff;border:none;border-radius:10px;cursor:pointer">Save</button>
+      </div>
+      <div id="hfTokenStatus" style="font-size:12px;color:var(--ts)"></div>
+    </div>
+
     <div class="setting-row">
       <div class="setting-info">
         <strong>Install app</strong>
@@ -913,6 +925,8 @@ function openSettings(){
   const qd=parseInt(localStorage.getItem('dsc_quote_dur'),10)||8;
   document.getElementById('quoteDurSlider').value=qd;
   document.getElementById('quoteDurLabel').textContent=qd+' seconds';
+  const hasToken=!!localStorage.getItem('dsc_hf_token');
+  document.getElementById('hfTokenStatus').textContent=hasToken?'✓ Token saved — voice logging active':'No token — voice logging disabled';
 }
 function closeSettings(){document.getElementById('settingsOverlay').classList.remove('on')}
 function closeSettingsOnBg(e){if(e.target===document.getElementById('settingsOverlay'))closeSettings()}
@@ -1473,16 +1487,8 @@ document.addEventListener('pointerdown', e=>{
 const HF_MODEL = 'scrutiniz3r/days-since-intent';
 let HF_TOKEN = '';
 
-async function loadSecrets(){
-  try{
-    const r = await fetch('https://api.github.com/gists/5f1869f76fac5c708500f7ea14750554',{
-      headers:{ Authorization:`token ${conf.token}`, Accept:'application/vnd.github.v3+json' }
-    });
-    if(!r.ok){ console.log('Secrets gist fetch failed:', r.status); return; }
-    const j = await r.json();
-    const content = j.files['secrets.json']?.content;
-    if(content){ HF_TOKEN = JSON.parse(content).hf_token || ''; console.log('HF token loaded:', HF_TOKEN ? 'YES' : 'NO'); }
-  } catch(e){ console.log('Could not load secrets:', e); }
+function loadSecrets(){
+  HF_TOKEN = localStorage.getItem('dsc_hf_token') || '';
 }
 
 async function callHFClassifier(text){
@@ -1794,6 +1800,18 @@ function applyTheme(dark){
   // Update apple status bar style
   const apple=document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
   if(apple) apple.setAttribute('content',dark?'black':'default');
+}
+function saveHFToken(){
+  const val=document.getElementById('hfTokenInput').value.trim();
+  if(!val){
+    document.getElementById('hfTokenStatus').textContent='Enter a token first';
+    return;
+  }
+  localStorage.setItem('dsc_hf_token',val);
+  HF_TOKEN=val;
+  document.getElementById('hfTokenInput').value='';
+  document.getElementById('hfTokenStatus').textContent='✓ Token saved';
+  setTimeout(()=>document.getElementById('hfTokenStatus').textContent='',2000);
 }
 function syncSettingToggles(){
   const dtEl=document.getElementById('darkToggle');
