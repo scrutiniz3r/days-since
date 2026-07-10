@@ -74,7 +74,15 @@ body{font-family:var(--sans);background:var(--bg);color:var(--tp);min-height:100
 .setup-card{width:100%;max-width:400px;background:var(--surface);border-radius:24px;padding:2rem;box-shadow:var(--shadow-lg)}
 .setup-logo{font-family:var(--serif);font-size:28px;font-weight:300;color:var(--tp);margin-bottom:.25rem}
 .setup-logo em{font-style:italic;color:var(--amber)}
-.setup-sub{font-size:14px;color:var(--ts);line-height:1.6;margin-bottom:1.75rem}
+.setup-sub{font-size:14px;color:var(--ts);line-height:1.6;margin-bottom:1.25rem}
+.welcome-msg{font-size:14px;color:var(--ts);line-height:1.7;margin-bottom:1.1rem;font-family:var(--serif)}
+.welcome-msg em{font-style:italic;color:var(--amber)}
+.welcome-punch{color:var(--tp);font-style:italic}
+.welcome-msg:last-of-type{margin-bottom:1.75rem}
+.setup-tabs{display:flex;gap:0;margin-bottom:1rem;background:var(--surface2);border-radius:12px;padding:4px}
+.setup-tab{flex:1;padding:9px;font-size:13px;font-weight:500;background:transparent;color:var(--ts);border:none;border-radius:9px;cursor:pointer;font-family:var(--sans);transition:all .15s}
+.setup-tab.on{background:var(--surface);color:var(--tp);font-weight:600;box-shadow:0 1px 4px rgba(44,32,22,.1)}
+.setup-hint{font-size:12px;color:var(--ts);background:var(--amber-bg);border-radius:10px;padding:10px 12px;margin-bottom:1.25rem;line-height:1.5}
 .field{margin-bottom:1.1rem}
 .field label{display:block;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--th);margin-bottom:6px}
 .field input{width:100%;padding:11px 14px;font-size:14px;border:1.5px solid var(--border);border-radius:12px;background:var(--bg);color:var(--tp);outline:none;font-family:var(--sans);transition:border-color .15s}
@@ -371,36 +379,37 @@ button{transition:transform .15s,box-shadow .15s,opacity .15s,background .15s,co
 <!-- ── SETUP ── -->
 <div id="setupScreen" class="screen">
   <div class="setup-wrap">
-    <div class="setup-card">
+
+    <div class="setup-card" id="welcomeCard">
+      <div class="setup-logo">Days <em>since</em></div>
+      <p class="welcome-msg">Hi! I am <em>Abbiraam</em> and you — are looking good today! That is a dope hair-style and a great smile!</p>
+      <p class="welcome-msg">But do you remember how many days since you cut your hair or had a dentist appointment?</p>
+      <p class="welcome-msg welcome-punch">Let me help you with that (:</p>
+      <p class="welcome-msg">Days since is an application that helps you keep log of things that we usually tend to forget.</p>
+      <p class="welcome-msg">It makes you more <em>mindful</em> of the things you do and the <em>frequency</em> you do it.</p>
+      <p class="welcome-msg">I would encourage you to <span style="color:var(--tp)">install</span> this on your phone and start tracking the <span style="font-size:12px">little-things</span> in life!</p>
+      <p class="welcome-msg"><em>Ciao!</em></p>
+      <button class="btn-cta" onclick="document.getElementById('welcomeCard').style.display='none';document.getElementById('setupFormCard').style.display=''">Let's go →</button>
+    </div>
+
+    <div class="setup-card" id="setupFormCard" style="display:none">
       <div class="setup-logo">Days <em>since</em></div>
       <p class="setup-sub">Your personal tracker. Syncs privately across all your devices via a GitHub Gist.</p>
 
-      <div class="field">
+      <div class="field" id="gistField">
         <label>GitHub Gist ID</label>
         <input type="text" id="sGist" placeholder="e.g. 4b2d8f3e1a9c0765"/>
-        <small>gist.github.com → New secret gist → filename <code>days-since.json</code> → content <code>{}</code> → Create. Copy the ID from the URL.</small>
+        <small id="gistHelp">Click → <a href="https://gist.github.com" target="_blank" rel="noopener" style="color:var(--amber);font-weight:600;text-decoration:none">gist.github.com</a> → New secret gist → filename <code style="white-space:nowrap;user-select:all">days-since.json</code> → content <code>{}</code> → Create. Copy the ID from the URL.</small>
       </div>
       <div class="field">
         <label>GitHub Token</label>
         <input type="password" id="sToken" placeholder="ghp_…"/>
-        <small>github.com/settings/tokens → New token (classic) → tick <code>gist</code> scope only.</small>
-      </div>
-
-      <div class="setup-pin-row">
-        <label for="pinToggle">Protect with a PIN?</label>
-        <label class="toggle">
-          <input type="checkbox" id="pinToggle" onchange="togglePinFields()"/>
-          <span class="toggle-slider"></span>
-        </label>
-      </div>
-      <div class="pin-fields" id="pinFields">
-        <input type="password" id="sPin" maxlength="4" placeholder="4-digit PIN" inputmode="numeric"/>
-        <input type="password" id="sPin2" maxlength="4" placeholder="Confirm PIN" inputmode="numeric"/>
+        <small id="tokenHelp">Click → <a href="https://github.com/settings/tokens" target="_blank" rel="noopener" style="color:var(--amber);font-weight:600;text-decoration:none">github.com/settings/tokens</a> → New token (classic) → tick <code>gist</code> scope only.</small>
       </div>
 
       <div class="err" id="setupErr"></div>
-      <button class="btn-cta" onclick="doSetup()">Let's go →</button>
-      <div class="setup-foot">Already set up? <a onclick="go('loginScreen')">Log in</a></div>
+      <button class="btn-cta" id="setupCta" onclick="doSetup()">Let's go →</button>
+      <div class="setup-foot" style="font-size:12px;color:var(--ts);margin-top:.75rem;text-align:center">Already set up? <a onclick="go('loginScreen')" style="color:var(--amber);font-weight:600;cursor:pointer">Log in</a></div>
     </div>
   </div>
 </div>
@@ -575,16 +584,12 @@ button{transition:transform .15s,box-shadow .15s,opacity .15s,background .15s,co
       <button class="tb-btn" onclick="lockApp()" id="lockNowBtn">🔒 Lock</button>
     </div>
 
-    <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:8px">
+    <div class="setting-row">
       <div class="setting-info">
-        <strong>Hugging Face token</strong>
-        <small>Required for voice logging. Stored locally only — never sent anywhere except HuggingFace.</small>
+        <strong>Know the creator</strong>
+        <small>Check out who built this app — a resume on a bike 🏍</small>
       </div>
-      <div style="display:flex;gap:8px;width:100%">
-        <input type="password" id="hfTokenInput" placeholder="hf_..." style="flex:1;padding:8px 12px;font-size:13px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);color:var(--tp);font-family:var(--sans);outline:none"/>
-        <button onclick="saveHFToken()" style="padding:8px 14px;font-size:13px;font-weight:600;background:var(--amber);color:#fff;border:none;border-radius:10px;cursor:pointer">Save</button>
-      </div>
-      <div id="hfTokenStatus" style="font-size:12px;color:var(--ts)"></div>
+      <button class="tb-btn" onclick="window.open('https://scrutiniz3r.github.io/resume-on-a-bike/','_blank')">Visit →</button>
     </div>
 
     <div class="setting-row">
@@ -873,28 +878,51 @@ function boot(){
 }
 
 // ── SETUP ──
-function togglePinFields(){
-  document.getElementById('pinFields').classList.toggle('show',document.getElementById('pinToggle').checked);
-}
-function doSetup(){
+
+async function doSetup(){
   const g=document.getElementById('sGist').value.trim();
   const t=document.getElementById('sToken').value.trim();
-  const usePIN=document.getElementById('pinToggle').checked;
-  const p=document.getElementById('sPin').value.trim();
-  const p2=document.getElementById('sPin2').value.trim();
   const err=document.getElementById('setupErr');
   if(!g){err.textContent='Gist ID is required';return}
   if(!t){err.textContent='Token is required';return}
-  if(usePIN){
-    if(!/^\d{4}$/.test(p)){err.textContent='PIN must be 4 digits';return}
-    if(p!==p2){err.textContent='PINs do not match';return}
-  }
   const ex=lsGet(CK);
-  if(ex&&ex.gistId&&ex.gistId!==g&&!confirm('Another account exists. Replace it?'))return;
-  conf={gistId:g,token:t,pinHash:usePIN?hash(p):null};
-  lsSet(CK,conf);
-  data=defData();lsSet(DK,data);
-  buildGreeting();renderAll();checkNotifBar();pushGist();loadSecrets();
+  if(ex&&ex.gistId&&ex.gistId!==g&&!confirm('Another account exists on this device. Replace it?'))return;
+
+  err.style.color='var(--ts)';
+  err.textContent='Connecting to your Gist…';
+
+  // Verify credentials and pull existing data BEFORE overwriting anything
+  try{
+    const r=await fetch(`https://api.github.com/gists/${g}`,{
+      headers:{Authorization:`token ${t}`,Accept:'application/vnd.github.v3+json'}
+    });
+    if(!r.ok){
+      err.style.color='var(--rose)';
+      err.textContent=r.status===404?'Gist not found — check the ID':'Invalid token or no access to this Gist';
+      return;
+    }
+    const j=await r.json();
+    const raw=(j.files['days-since.json']||{}).content||'{}';
+    let remote={};
+    try{ remote=JSON.parse(raw); }catch(e){ remote={}; }
+
+    conf={gistId:g,token:t,pinHash:null};
+    lsSet(CK,conf);
+
+    if(remote.items&&remote.items.length){
+      data={items:remote.items.map(norm),labels:normLabels(remote.labels||defData().labels)};
+      lsSet(DK,data);
+      buildGreeting();renderAll();checkNotifBar();loadSecrets();
+      setSyncStatus('ok','Synced — welcome back!');
+    } else {
+      data=defData();lsSet(DK,data);
+      buildGreeting();renderAll();checkNotifBar();pushGist();loadSecrets();
+    }
+  }catch(e){
+    err.style.color='var(--rose)';
+    err.textContent='Could not connect. Check your internet and try again.';
+    console.error(e);
+  }
 }
 
 // ── PIN LOGIN ──
