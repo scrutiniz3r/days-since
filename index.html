@@ -147,6 +147,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--tp);min-height:100
 .topbar-title{font-family:var(--serif);font-size:30px;font-weight:300;flex:1;color:var(--tp);line-height:1}
 .topbar-title em{font-style:italic;color:var(--amber)}
 .tb-btn{height:38px;border-radius:var(--pill);border:1.5px solid var(--border);background:transparent;color:var(--ts);cursor:pointer;transition:all .15s;font-family:var(--sans);font-size:18px;font-weight:500;display:flex;align-items:center;gap:5px;padding:0 14px;white-space:nowrap}
+.setting-row .tb-btn{height:30px;font-size:12px;padding:0 12px;gap:4px}
 .tb-btn:hover{border-color:var(--amber);color:var(--amber);transform:translateY(-1px);box-shadow:var(--shadow)}
 .tb-btn:active{transform:scale(.95)}
 
@@ -587,9 +588,17 @@ button{transition:transform .15s,box-shadow .15s,opacity .15s,background .15s,co
     <div class="setting-row">
       <div class="setting-info">
         <strong>Know the creator</strong>
-        <small>Check out who built this app — a resume on a bike 🏍</small>
+        <small>Check out who built this app</small>
       </div>
       <button class="tb-btn" onclick="window.open('https://scrutiniz3r.github.io/resume-on-a-bike/','_blank')">Visit →</button>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-info">
+        <strong>Buy me a chaya ☕</strong>
+        <small>and a hot paruppu vada on a rainy evening</small>
+      </div>
+      <button class="tb-btn" onclick="copyUPI(this)">makemehappynow@axl</button>
     </div>
 
     <div class="setting-row">
@@ -852,6 +861,11 @@ const LAWS=[
 ];
 
 function buildGreeting(){
+  if(sessionStorage.getItem('dsc_skip_greet')){
+    sessionStorage.removeItem('dsc_skip_greet');
+    go('mainScreen');
+    return;
+  }
   const q=LAWS[Math.floor(Math.random()*LAWS.length)];
   document.getElementById('greetEmoji').textContent='';
   document.getElementById('greetEmoji').style.display='none';
@@ -962,8 +976,6 @@ function openSettings(){
   const qd=parseInt(localStorage.getItem('dsc_quote_dur'),10)||8;
   document.getElementById('quoteDurSlider').value=qd;
   document.getElementById('quoteDurLabel').textContent=qd+' seconds';
-  const hasToken=!!localStorage.getItem('dsc_hf_token');
-  document.getElementById('hfTokenStatus').textContent=hasToken?'✓ Token saved — voice logging active':'No token — voice logging disabled';
 }
 function closeSettings(){document.getElementById('settingsOverlay').classList.remove('on')}
 function closeSettingsOnBg(e){if(e.target===document.getElementById('settingsOverlay'))closeSettings()}
@@ -1830,17 +1842,27 @@ function applyTheme(dark){
   const apple=document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
   if(apple) apple.setAttribute('content',dark?'black':'default');
 }
-function saveHFToken(){
-  const val=document.getElementById('hfTokenInput').value.trim();
-  if(!val){
-    document.getElementById('hfTokenStatus').textContent='Enter a token first';
-    return;
+function copyUPI(btn){
+  const upi='makemehappynow@axl';
+  const done=()=>{
+    const orig='makemehappynow@axl';
+    btn.textContent='UPI-ID copied! (:';
+    setTimeout(()=>btn.textContent=orig,1800);
+  };
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(upi).then(done).catch(()=>fallbackCopy(upi,done));
+  } else {
+    fallbackCopy(upi,done);
   }
-  localStorage.setItem('dsc_hf_token',val);
-  HF_TOKEN=val;
-  document.getElementById('hfTokenInput').value='';
-  document.getElementById('hfTokenStatus').textContent='✓ Token saved';
-  setTimeout(()=>document.getElementById('hfTokenStatus').textContent='',2000);
+}
+function fallbackCopy(text,cb){
+  const ta=document.createElement('textarea');
+  ta.value=text;
+  ta.style.position='fixed';ta.style.opacity='0';
+  document.body.appendChild(ta);
+  ta.focus();ta.select();
+  try{ document.execCommand('copy'); cb&&cb(); }catch(e){ console.error('Copy failed',e); }
+  document.body.removeChild(ta);
 }
 function syncSettingToggles(){
   const dtEl=document.getElementById('darkToggle');
@@ -1850,8 +1872,9 @@ function syncSettingToggles(){
 }
 function toggleDarkMode(){
   const dark=document.getElementById('darkToggle').checked;
-  applyTheme(dark);
   localStorage.setItem('dsc_theme',dark?'dark':'light');
+  sessionStorage.setItem('dsc_skip_greet','1');
+  location.reload();
 }
 function initTheme(){
   const saved=localStorage.getItem('dsc_theme');
